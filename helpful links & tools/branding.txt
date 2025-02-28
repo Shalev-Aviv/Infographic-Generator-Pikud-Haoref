@@ -1,4 +1,4 @@
-font usage:
+font:
     Heebo
     h1 title - weight 900, size 64px, letter-spacing -1.5px, line-height 80, text-shadow 0 0 1px rrgba(0, 0, 0, 0.48)
     h2 title - weight 700, size 32px, line-height 1

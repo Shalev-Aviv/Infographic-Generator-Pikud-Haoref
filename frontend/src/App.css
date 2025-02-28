@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&display=swap');
+
+
 .App {
   text-align: center;
 }
@@ -14,7 +17,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #fafafa;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -24,15 +27,57 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+body {
+  font-family: 'Heebo', sans-serif;
+  direction: rtl;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+h1 {
+  font-weight: 900;
+  font-size: 64px;
+  letter-spacing: -1.5px;
+  line-height: 80px;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.48);
+  
+  margin: 0;
+  padding: 0 20px;
+}
+
+h2 {
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  
+  margin: 0;
+  padding: 0 20px;
+}
+
+p {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24;
+  
+  margin: 0;
+  padding: 0 20px;
+}
+
+:root {
+  --red: #ed0000;
+  --dark-red: #bd0728;
+  --orange: #e89024;
+  --light-orange: #f3ad54;
+  --black: #222221;
+  --blue: #1d55d0;
+  --dark-blue: #22395f;
+  --dark-gray: #2f4858;
+  --light-blue: #f4f8fe;
+  --silver: #f2f2f2;
+  --twitter: #222221;
+  --facebook: #3d5a96;
+  --whatsapp: #2ab858;
+  --link: #1d55d0;
+  --email: #222221;
+  --gray: #24263d;
+  --yellow: #eec02d;
+  --green: #00a64c;
 }

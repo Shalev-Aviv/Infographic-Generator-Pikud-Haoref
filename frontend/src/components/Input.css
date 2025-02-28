@@ -1,0 +1,26 @@
+.container {
+}
+
+.input {
+    
+    font-family: 'Heebo', sans-serif;
+    color: var(--black);
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    
+    background-color: var(--white);
+    border: 5px solid #e2e2e2;
+    border-radius: 12px;
+    
+    padding: 20px 25px 24px 24px;
+    width: 267px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    height: 137px;
+}
+
+.sumbit {
+
+}

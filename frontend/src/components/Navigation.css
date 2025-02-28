@@ -1,0 +1,49 @@
+.navbar {
+    background-color: var(--black);
+    height: 80px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    max-width: 1357px;
+    padding: 0 24px;
+    position: relative;
+    
+    display: flex;
+    align-items: center;
+}
+
+.right {
+    cursor: pointer;
+}
+
+.logo-button {
+    background: none;
+    border: 0;
+    display: flex;
+    align-items: center;
+}
+
+.logos {
+    margin-inline-end: 16px;
+    height: 32px;
+    width: 32px;
+}
+
+.name {
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: .242857px;
+    color: #fff;
+    font-style: normal;
+    font-weight: 700;
+    font-family: 'Heebo', sans-serif;
+}

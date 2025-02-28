@@ -17,7 +17,6 @@
 }
 
 .App-header {
-  background-color: #fafafa;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -29,6 +28,7 @@
 
 body {
   font-family: 'Heebo', sans-serif;
+  background-color: #fafafa;
   direction: rtl;
 }
 

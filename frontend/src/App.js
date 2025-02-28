@@ -2,6 +2,7 @@ import './App.css';
 import Navigation from './components/Navigation.jsx';
 import Header from './components/Header.jsx';
 import Input from './components/Input.jsx';
+import Footer from './components/Footer.jsx';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Navigation />
         <Header />
         <Input />
+        <Footer />
       </header>
     </div>
   );

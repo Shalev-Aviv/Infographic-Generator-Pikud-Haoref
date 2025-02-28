@@ -1,0 +1,110 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+h4 {
+    color: var(--white);
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: 0.492063px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 12px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--black);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 96px;
+    height: 198px;
+    padding: 20px;
+    height: auto;
+    flex-wrap: wrap;
+}
+
+.side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    background-size: 20px;  /* Adjust these values to make the logos smaller */
+    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: 0 3px 36px #000000ad;
+    border-radius: 50%;
+    background-color: #ffffff42;
+}
+
+#youtube, #facebook, #instagram, #x, #telegram, #tiktok {
+    background-position: center;
+}
+#youtube {
+    background-image: url(/public/media/Youtube.png);
+}
+#facebook {
+    background-image: url(/public/media/Facebook.png);
+}
+#instagram {
+    background-image: url(/public/media/Instagram.png);
+}
+#x {
+    background-image: url(/public/media/X.png);
+}
+#telegram {
+    background-image: url(/public/media/Telegram.png);
+}
+#tiktok {
+    background-image: url(/public/media/TikTok.png);
+}
+
+.divider {
+    background-color: #979797;
+    width: 1px;
+    height: 110px;
+    opacity: 0.67;
+}
+
+.downloads {
+    display: block;
+    width: 104px;
+    height: 40px;
+}
+
+.os {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff42;
+    box-shadow: 0 3px 36px #000000ad;
+    border-radius: 32px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto; /* Make image fit within the button */
+}
+
+
+#google-play {
+    background-image: url(/public/media/google-play.png);
+}
+#app-store {
+    background-image: url(/public/media/app-store.png);
+}

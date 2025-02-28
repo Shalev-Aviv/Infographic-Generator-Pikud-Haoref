@@ -7,16 +7,17 @@
     left: 0;
     right: 0;
     z-index: 9999;
-
+    
+    display: flex;
+    align-items: center;
     justify-content: center;
 }
 
 .container {
-    display: flex;
     max-width: 1357px;
     padding: 0 24px;
-    position: relative;
     
+    position: relative;
     display: flex;
     align-items: center;
 }
@@ -46,4 +47,16 @@
     font-style: normal;
     font-weight: 700;
     font-family: 'Heebo', sans-serif;
+}
+
+.tab {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+
+    display: flex;
+    align-items: center;
+    margin-inline-start: 50px;
+    align-self: flex-start;
+    height: 100%;
 }

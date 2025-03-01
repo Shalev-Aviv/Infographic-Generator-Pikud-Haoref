@@ -1,2 +1,3 @@
-Flask
-flask-cors
+pip install Flask
+pip install flask-cors
+pip install googletrans==4.0.0-rc1

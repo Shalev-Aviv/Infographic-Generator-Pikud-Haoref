@@ -1,3 +1,5 @@
 pip install Flask
 pip install flask-cors
 pip install googletrans==4.0.0-rc1
+pip install spacy==3.7.0
+python -m spacy download en_core_web_sm

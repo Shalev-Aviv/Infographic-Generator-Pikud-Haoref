@@ -1,5 +1,5 @@
 import './Input.css';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 function Input() {
     const text1Ref = useRef(null);
@@ -8,7 +8,18 @@ function Input() {
     const image2PromptRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [svgData, setSvgData] = useState(null); // הוספת state עבור נתוני ה-SVG
+    const [svgData, setSvgData] = useState(null);
+    const [templateSvg, setTemplateSvg] = useState(null);
+
+    useEffect(() => {
+        fetch('/template.svg')
+            .then((response) => response.text())
+            .then((data) => {
+                console.log("Template SVG loaded:", data.substring(0, 100));
+                setTemplateSvg(data);
+            })
+            .catch(error => console.error("Error loading template:", error));
+    }, []);
 
     const handleClick = async () => {
         setLoading(true);
@@ -26,7 +37,7 @@ function Input() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json', // שינוי ל-application/json
+                    'Accept': 'image/svg+xml',
                 },
                 credentials: 'include',
                 body: JSON.stringify({ text1, text2, image1Prompt, image2Prompt }),
@@ -36,12 +47,8 @@ function Input() {
                 throw new Error(`Server responded with status: ${response.status}`);
             }
 
-            const data = await response.json(); // קבלת נתוני JSON מהשרת
-            console.log('Received data:', data);
-
-            // עדכון ה-PLACEHOLDERS ב-SVG
-            const updatedSvg = updateSvgPlaceholders(data);
-            setSvgData(updatedSvg);
+            const svgText = await response.text();
+            setSvgData(svgText);
 
         } catch (error) {
             console.error('Error:', error);
@@ -51,20 +58,15 @@ function Input() {
         }
     };
 
-    const updateSvgPlaceholders = (data) => {
-        // כאן תוסיף את הלוגיקה לעדכון ה-PLACEHOLDERS ב-SVG
-        // לדוגמה, תוכל להשתמש ב-DOMParser כדי לטעון את ה-SVG,
-        // למצוא את האלמנטים המתאימים ולעדכן את התוכן שלהם.
-        // אם ה-SVG שלך מורכב, ייתכן שתצטרך להשתמש בספרייה כמו 'svg-parser'.
-        // לעת עתה, נחזיר מחרוזת SVG פשוטה עם הנתונים שהתקבלו.
-        return `
-            <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
-                <text x="50" y="50">${data.text1}</text>
-                <text x="50" y="100">${data.text2}</text>
-                <image x="50" y="150" width="200" height="150" href="data:image/png;base64,${data.image1}" />
-                <image x="50" y="300" width="200" height="150" href="data:image/png;base64,${data.image2}" />
-            </svg>
-        `;
+    const downloadSvg = () => {
+        if (svgData) {
+            const element = document.createElement("a");
+            const file = new Blob([svgData], { type: 'image/svg+xml' });
+            element.href = URL.createObjectURL(file);
+            element.download = "infographic.svg";
+            document.body.appendChild(element);
+            element.click();
+        }
     };
 
     return (
@@ -86,7 +88,13 @@ function Input() {
             </button>
             {error && <div className="error">{error}</div>}
             {svgData && (
-                <div dangerouslySetInnerHTML={{ __html: svgData }} className="template-preview" />
+                <div>
+                    <div dangerouslySetInnerHTML={{ __html: svgData }} className="template-preview" />
+                    <button onClick={downloadSvg}>הורד SVG</button>
+                </div>
+            )}
+            {!svgData && templateSvg && (
+                <div dangerouslySetInnerHTML={{ __html: templateSvg }} className="template-preview" />
             )}
         </div>
     );

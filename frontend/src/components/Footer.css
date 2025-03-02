@@ -1,6 +1,14 @@
-body, html {
-    height: 100%;
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     margin: 0;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 h4 {
@@ -20,18 +28,18 @@ ul {
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
     background-color: var(--black);
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 96px;
-    height: 198px;
     padding: 20px;
     height: auto;
+    z-index: 9999;
     flex-wrap: wrap;
+    margin-top: auto; /* This pushes the footer to the bottom */
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .side {
@@ -100,7 +108,6 @@ ul {
     background-position: center;
     background-size: auto; /* Make image fit within the button */
 }
-
 
 #google-play {
     background-image: url(/public/media/google-play.png);

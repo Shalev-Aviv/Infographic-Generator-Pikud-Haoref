@@ -2,7 +2,7 @@ import './Footer.css';
 
 function Footer() {
   return (
-    <div className="footer">
+    <footer className="footer">
         <div className='side'>
             <h4>עקבו אחרינו גם ברשתות</h4>
             <ul>
@@ -38,7 +38,7 @@ function Footer() {
                 </li>
             </ul>
         </div>
-    </div>
+    </footer>
   );
 }
 

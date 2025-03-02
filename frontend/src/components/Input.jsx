@@ -1,5 +1,6 @@
 import './Input.css';
 import React, { useRef, useState, useEffect } from 'react';
+import { ImageIcon, Type, Download, Loader } from 'lucide-react';
 
 function Input() {
     const text1Ref = useRef(null);
@@ -13,43 +14,37 @@ function Input() {
 
     useEffect(() => {
         fetch('/template.svg')
-            .then((response) => response.text())
-            .then((data) => {
-                console.log("Template SVG loaded:", data.substring(0, 100));
-                setTemplateSvg(data);
-            })
-            .catch(error => console.error("Error loading template:", error));
+            .then(response => response.ok ? response.text() : Promise.reject(`HTTP error! status: ${response.status}`))
+            .then(setTemplateSvg)
+            .catch(console.error);
     }, []);
+
+    const updateTemplate = () => {
+        if (!templateSvg) return '';
+        return templateSvg
+            .replace(/{{text1}}/g, text1Ref.current?.value || '')
+            .replace(/{{text2}}/g, text2Ref.current?.value || '')
+            .replace(/{{image1Prompt}}/g, image1PromptRef.current?.value || '')
+            .replace(/{{image2Prompt}}/g, image2PromptRef.current?.value || '');
+    };
 
     const handleClick = async () => {
         setLoading(true);
         setError(null);
-
         try {
-            const text1 = text1Ref.current.value;
-            const text2 = text2Ref.current.value;
-            const image1Prompt = image1PromptRef.current.value;
-            const image2Prompt = image2PromptRef.current.value;
-
-            console.log('Sending data:', { text1, text2, image1Prompt, image2Prompt });
-
             const response = await fetch('http://127.0.0.1:5000/infographic', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'image/svg+xml',
-                },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'image/svg+xml' },
                 credentials: 'include',
-                body: JSON.stringify({ text1, text2, image1Prompt, image2Prompt }),
+                body: JSON.stringify({
+                    text1: text1Ref.current.value,
+                    text2: text2Ref.current.value,
+                    image1Prompt: image1PromptRef.current.value,
+                    image2Prompt: image2PromptRef.current.value
+                }),
             });
-
-            if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-            }
-
-            const svgText = await response.text();
-            setSvgData(svgText);
-
+            if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+            setSvgData(await response.text());
         } catch (error) {
             console.error('Error:', error);
             setError(`Error: ${error.message}`);
@@ -59,43 +54,118 @@ function Input() {
     };
 
     const downloadSvg = () => {
-        if (svgData) {
-            const element = document.createElement("a");
-            const file = new Blob([svgData], { type: 'image/svg+xml' });
-            element.href = URL.createObjectURL(file);
-            element.download = "infographic.svg";
-            document.body.appendChild(element);
-            element.click();
-        }
+        if (!svgData) return;
+        const element = document.createElement("a");
+        element.href = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
+        element.download = "infographic.svg";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     };
 
     return (
-        <div className="container">
-            <div className="input-group">
-                <input ref={image1PromptRef} className="input" placeholder="תמונה 1" />
-                <textarea ref={text1Ref} className="input" placeholder="טקסט 1" />
+        <div className="infographic-container">
+            <div className="infographic-form">
+                <div className="input-section">
+                    <h2 className="section-title">חלק 1</h2>
+                    <div className="input-group">
+                        <div className="input-wrapper">
+                            <label htmlFor="image1Prompt" className="input-label">
+                                <ImageIcon size={18} />
+                                <span>תיאור תמונה 1</span>
+                            </label>
+                            <input 
+                                id="image1Prompt"
+                                ref={image1PromptRef} 
+                                className="input-field" 
+                                placeholder="תאר את התמונה שתרצה ליצור..." 
+                            />
+                        </div>
+                        
+                        <div className="input-wrapper">
+                            <label htmlFor="text1" className="input-label">
+                                <Type size={18} />
+                                <span>טקסט 1</span>
+                            </label>
+                            <textarea 
+                                id="text1"
+                                ref={text1Ref} 
+                                className="input-field textarea" 
+                                placeholder="הכנס את הטקסט שלך כאן..." 
+                                onChange={() => setSvgData(null)} 
+                            />
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="input-section">
+                    <h2 className="section-title">חלק 2</h2>
+                    <div className="input-group">
+                        <div className="input-wrapper">
+                            <label htmlFor="image2Prompt" className="input-label">
+                                <ImageIcon size={18} />
+                                <span>תיאור תמונה 2</span>
+                            </label>
+                            <input 
+                                id="image2Prompt"
+                                ref={image2PromptRef} 
+                                className="input-field" 
+                                placeholder="תאר את התמונה שתרצה ליצור..." 
+                            />
+                        </div>
+                        
+                        <div className="input-wrapper">
+                            <label htmlFor="text2" className="input-label">
+                                <Type size={18} />
+                                <span>טקסט 2</span>
+                            </label>
+                            <textarea 
+                                id="text2"
+                                ref={text2Ref} 
+                                className="input-field textarea" 
+                                placeholder="הכנס את הטקסט שלך כאן..." 
+                                onChange={() => setSvgData(null)} 
+                            />
+                        </div>
+                    </div>
+                </div>
+                
+                <button 
+                    className="generate-button" 
+                    onClick={handleClick} 
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <>
+                            <Loader size={18} className="spinner" />
+                            <span>מעבד...</span>
+                        </>
+                    ) : (
+                        <span>צור אינפוגרפיקה</span>
+                    )}
+                </button>
             </div>
-            <div className="input-group">
-                <input ref={image2PromptRef} className="input" placeholder="תמונה 2" />
-                <textarea ref={text2Ref} className="input" placeholder="טקסט 2" />
-            </div>
-            <button
-                className="submit"
-                onClick={handleClick}
-                disabled={loading}
-            >
-                {loading ? 'מעבד...' : 'צור אינפוגרפיקה'}
-            </button>
-            {error && <div className="error">{error}</div>}
-            {svgData && (
-                <div>
-                    <div dangerouslySetInnerHTML={{ __html: svgData }} className="template-preview" />
-                    <button onClick={downloadSvg}>הורד SVG</button>
+            
+            {error && (
+                <div className="error-message">
+                    <p>{error}</p>
                 </div>
             )}
-            {!svgData && templateSvg && (
-                <div dangerouslySetInnerHTML={{ __html: templateSvg }} className="template-preview" />
-            )}
+            
+            <div className="preview-section">
+                <h2 className="preview-title">תצוגה מקדימה</h2>
+                <div 
+                    className="template-preview" 
+                    dangerouslySetInnerHTML={{ __html: svgData || updateTemplate() }} 
+                />
+                
+                {svgData && (
+                    <button className="download-button" onClick={downloadSvg}>
+                        <Download size={18} />
+                        <span>הורד SVG</span>
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

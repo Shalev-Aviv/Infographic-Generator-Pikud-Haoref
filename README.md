@@ -29,19 +29,20 @@ Infographic Generator is a project aimed at creating personalized infographics a
 - npm 10.5.0
 - Python 3.10.6
 
+### Running the Backend
+```sh
+cd backend
+python3.10 -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
+
 ### Running the Frontend
 ```sh
 cd frontend
 npm install
 npm start
-```
-
-### Running the Backend
-```sh
-cd backend
-venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
 ```
 
 ## Contribution🤝

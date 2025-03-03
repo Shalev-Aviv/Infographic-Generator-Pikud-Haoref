@@ -20,6 +20,12 @@ def get_nlp_model():
         nlp_en = spacy.load("en_core_web_sm")
     return nlp_en
 
+def split_first_word(text):
+    words = text.split()
+    if len(words) > 1:
+        return words[0], " ".join(words[1:])
+    return words[0], ""
+
 @app.route('/infographic', methods=['POST'])
 def create_infographic():
     logging.debug("Received POST request at /infographic")
@@ -35,7 +41,9 @@ def create_infographic():
     image1Prompt_en = GoogleTranslator(source='auto', target='en').translate(image1Prompt)
     image2Prompt_en = GoogleTranslator(source='auto', target='en').translate(image2Prompt)
 
-    # Process image prompts (keywords generation code omitted for brevity)
+    text1_first, text1_rest = split_first_word(text1_en)
+    text2_first, text2_rest = split_first_word(text2_en)
+
     doc_image1 = get_nlp_model()(image1Prompt_en)
     keywords_image1 = [token.text for token in doc_image1 if token.is_alpha and not token.is_stop]
     combined_image1_en = f"{image1Prompt_en}, {', '.join(keywords_image1)}"
@@ -46,27 +54,22 @@ def create_infographic():
 
     sd_url = "http://127.0.0.1:7860/sdapi/v1/txt2img"
 
-    # Generate first image
-    payload = {"prompt": combined_image1_en, "steps": 20}
     try:
-        response = requests.post(sd_url, json=payload)
+        response = requests.post(sd_url, json={"prompt": combined_image1_en, "steps": 20})
         response.raise_for_status()
         image1_base64 = response.json()["images"][0]
     except Exception as e:
         logging.error(f"Error generating image1: {e}")
         return jsonify({"error": "Stable Diffusion error (image1)"}), 500
 
-    # Generate second image
-    payload = {"prompt": combined_image2_en, "steps": 20}
     try:
-        response = requests.post(sd_url, json=payload)
+        response = requests.post(sd_url, json={"prompt": combined_image2_en, "steps": 20})
         response.raise_for_status()
         image2_base64 = response.json()["images"][0]
     except Exception as e:
         logging.error(f"Error generating image2: {e}")
         return jsonify({"error": "Stable Diffusion error (image2)"}), 500
 
-    # Load the SVG template and embed the base64 images directly
     try:
         with open("template.svg", "r") as f:
             template_svg = f.read()
@@ -74,19 +77,20 @@ def create_infographic():
         logging.error(f"Error loading template.svg: {e}")
         return jsonify({"error": "Template SVG not found"}), 500
 
-    updated_svg = template_svg.replace('{{text1}}', text1_en)\
-                              .replace('{{text2}}', text2_en)\
+    updated_svg = template_svg.replace('{{text1_first}}', text1_first)\
+                              .replace('{{text1_rest}}', text1_rest)\
+                              .replace('{{text2_first}}', text2_first)\
+                              .replace('{{text2_rest}}', text2_rest)\
                               .replace('{{image1}}', f"data:image/png;base64,{image1_base64}")\
                               .replace('{{image2}}', f"data:image/png;base64,{image2_base64}")
 
-    # Return the SVG directly as a response
     response = make_response(updated_svg)
     response.headers['Content-Type'] = 'image/svg+xml'
     return response
 
 @app.route("/")
 def helloWorld():
-    return "Hello, World!"
+    return "Running Flask server"
 
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']

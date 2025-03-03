@@ -8,10 +8,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <Navigation />
-        <Header />
-        <Input />
-        <Footer />
+        <Navigation /> {/* The top section */}
+        <Header /> {/* The main & secondary texts */}
+        <Input /> {/* The section where the user creating the infographic */}
+        <Footer /> {/* The bottom part with all the links */}
       </header>
     </div>
   );

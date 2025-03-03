@@ -3,47 +3,38 @@
     --primary-color: #3b82f6;
     --primary-hover: #2563eb;
     --secondary-color: #f3f4f6;
-    --text-color: #1f2937;
     --border-color: #e5e7eb;
     --error-color: #ef4444;
     --success-color: #10b981;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --radius: 0.5rem;
   }
   
   /* Main Container */
   .infographic-container {
-    max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
-    background-color: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
     direction: rtl;
   }
   
   /* Form Section */
   .infographic-form {
     display: flex;
-    flex-direction: column;
     gap: 2rem;
-    margin-bottom: 2rem;
   }
   
   .input-section {
-    background-color: var(--secondary-color);
     padding: 1.5rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
+    border-radius: 12px;
   }
   
   .section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--text-color);
+    font-size: 32px;
+    line-height: 47px;
+    font-weight: 700;
+    color: var(--dark-gray);
   }
   
   .input-group {
@@ -60,32 +51,28 @@
   }
   
   .input-label {
+    color: var(--black);
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-weight: 500;
-    color: var(--text-color);
   }
   
   .input-field {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    font-size: 1rem;
+    padding: 16px 25px 24px 24px;
+    width: 267px;
+    border-radius: 12px;
+    font-size: 16px;
     transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  
-  .input-field:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background: #FFFFFF;
+    border: .5px solid #E2E2E2;
+    box-shadow: 0 0 4px #0000000a;
   }
   
   .textarea {
     font-family: 'Heebo', sans-serif;
     min-height: 100px;
-    resize: vertical;
+    resize: none;
   }
   
   /* Buttons */
@@ -98,16 +85,20 @@
     font-size: 1rem;
     font-weight: 500;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 12px;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
   }
   
   .generate-button {
-    background-color: var(--primary-color);
+    font-family: 'Heebo', sans-serif;
+    background-color: var(--orange);
+    box-shadow: 0 2px 4px #22395f52;
     color: white;
     margin-top: 1rem;
     align-self: center;
+    padding: 3.5px 24px 5.5px;
+    border-radius: 100px;
   }
   
   .generate-button:hover:not(:disabled) {
@@ -125,7 +116,7 @@
   
   .download-button {
     background-color: var(--secondary-color);
-    color: var(--text-color);
+    color: var(--black);
     margin-top: 1rem;
   }
   
@@ -137,7 +128,7 @@
   .error-message {
     background-color: #fee2e2;
     border: 1px solid #fecaca;
-    border-radius: var(--radius);
+    border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1.5rem;
     color: var(--error-color);
@@ -145,23 +136,25 @@
   
   /* Preview Section */
   .preview-section {
+    margin: 2rem auto;
     background-color: var(--secondary-color);
     padding: 1.5rem;
-    border-radius: var(--radius);
+    border-radius: 12px;
     box-shadow: var(--shadow-sm);
   }
   
   .preview-title {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 32px;
+    line-height: 47px;
+    font-weight: 700;
+    color: var(--dark-gray);
     margin-bottom: 1rem;
-    color: var(--text-color);
   }
   
   .template-preview {
     background-color: white;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius);
+    border-radius: 12px;
     padding: 1rem;
     min-height: 300px;
     display: flex;
@@ -186,10 +179,6 @@
   
   /* Responsive Design */
   @media (min-width: 768px) {
-    .input-group {
-      flex-direction: row;
-    }
-    
     .input-wrapper {
       flex: 1;
     }

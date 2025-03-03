@@ -22,7 +22,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
 }
 
@@ -45,8 +44,9 @@ h1 {
 
 h2 {
   font-weight: 700;
-  font-size: 32px;
-  line-height: 1;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: 1.6775px;
   
   margin: 0;
   padding: 0 20px;

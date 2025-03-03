@@ -74,12 +74,7 @@ function Input() {
                                 <ImageIcon size={18} />
                                 <span>תיאור תמונה 1</span>
                             </label>
-                            <input 
-                                id="image1Prompt"
-                                ref={image1PromptRef} 
-                                className="input-field" 
-                                placeholder="תאר את התמונה שתרצה ליצור..." 
-                            />
+                            <textarea id="image1Prompt" ref={image1PromptRef} className="input-field textarea" placeholder="תאר את התמונה שתרצה ליצור..." />
                         </div>
                         
                         <div className="input-wrapper">
@@ -87,13 +82,7 @@ function Input() {
                                 <Type size={18} />
                                 <span>טקסט 1</span>
                             </label>
-                            <textarea 
-                                id="text1"
-                                ref={text1Ref} 
-                                className="input-field textarea" 
-                                placeholder="הכנס את הטקסט שלך כאן..." 
-                                onChange={() => setSvgData(null)} 
-                            />
+                            <textarea id="text1" ref={text1Ref} className="input-field textarea" placeholder="הכנס את הטקסט שלך כאן..." onChange={() => setSvgData(null)} />
                         </div>
                     </div>
                 </div>
@@ -106,12 +95,7 @@ function Input() {
                                 <ImageIcon size={18} />
                                 <span>תיאור תמונה 2</span>
                             </label>
-                            <input 
-                                id="image2Prompt"
-                                ref={image2PromptRef} 
-                                className="input-field" 
-                                placeholder="תאר את התמונה שתרצה ליצור..." 
-                            />
+                            <textarea id="image2Prompt" ref={image2PromptRef} className="input-field textarea" placeholder="תאר את התמונה שתרצה ליצור..." />
                         </div>
                         
                         <div className="input-wrapper">
@@ -129,42 +113,18 @@ function Input() {
                         </div>
                     </div>
                 </div>
-                
-                <button 
-                    className="generate-button" 
-                    onClick={handleClick} 
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <Loader size={18} className="spinner" />
-                            <span>מעבד...</span>
-                        </>
-                    ) : (
-                        <span>צור אינפוגרפיקה</span>
-                    )}
-                </button>
             </div>
+            <button className="generate-button" onClick={handleClick} disabled={loading} >
+                {loading ? (<><Loader size={18} className="spinner" /><span>מעבד...</span></>) : (<span>צור אינפוגרפיקה</span>)}
+            </button>
             
-            {error && (
-                <div className="error-message">
-                    <p>{error}</p>
-                </div>
-            )}
+            {error && (<div className="error-message"><p>{error}</p></div>)}
             
             <div className="preview-section">
                 <h2 className="preview-title">תצוגה מקדימה</h2>
-                <div 
-                    className="template-preview" 
-                    dangerouslySetInnerHTML={{ __html: svgData || updateTemplate() }} 
-                />
+                <div className="template-preview" dangerouslySetInnerHTML={{ __html: svgData || updateTemplate() }} />
                 
-                {svgData && (
-                    <button className="download-button" onClick={downloadSvg}>
-                        <Download size={18} />
-                        <span>הורד SVG</span>
-                    </button>
-                )}
+                {svgData && (<button className="download-button" onClick={downloadSvg}><Download size={18} /><span>הורד SVG</span></button>)}
             </div>
         </div>
     );

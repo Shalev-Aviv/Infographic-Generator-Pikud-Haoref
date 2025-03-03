@@ -137,10 +137,8 @@
   /* Preview Section */
   .preview-section {
     margin: 2rem auto;
-    background-color: var(--secondary-color);
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: var(--shadow-sm);
   }
   
   .preview-title {
@@ -152,8 +150,6 @@
   }
   
   .template-preview {
-    background-color: white;
-    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1rem;
     min-height: 300px;

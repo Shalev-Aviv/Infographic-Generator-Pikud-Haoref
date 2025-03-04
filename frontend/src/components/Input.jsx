@@ -11,6 +11,8 @@ function Input() {
     const [error, setError] = useState(null);
     const [svgData, setSvgData] = useState(null);
     const [templateSvg, setTemplateSvg] = useState(null);
+    const [image1PromptError, setImage1PromptError] = useState(null); // Separate error for image1
+    const [image2PromptError, setImage2PromptError] = useState(null); // Separate error for image2
 
     useEffect(() => {
         fetch('/template.svg')
@@ -29,8 +31,30 @@ function Input() {
     };
 
     const handleClick = async () => {
-        setLoading(true);
+        // Reset error messages
         setError(null);
+        setImage1PromptError(null);
+        setImage2PromptError(null);
+
+        let hasError = false;
+
+        // Validation for image1
+        if (!image1PromptRef.current.value) {
+            setImage1PromptError("*יש למלא את תיאור תמונה 1");
+            hasError = true;
+        }
+
+        // Validation for image2
+        if (!image2PromptRef.current.value) {
+            setImage2PromptError("*יש למלא את תיאור תמונה 2");
+            hasError = true;
+        }
+
+        if (hasError) {
+            return; // Stop the function if there are errors
+        }
+
+        setLoading(true);
         try {
             const response = await fetch('http://127.0.0.1:5000/infographic', {
                 method: 'POST',
@@ -75,8 +99,8 @@ function Input() {
                                 <span>תיאור תמונה 1</span>
                             </label>
                             <textarea id="image1Prompt" ref={image1PromptRef} className="input-field textarea" placeholder="תאר את התמונה שתרצה ליצור..." />
+                            {image1PromptError && <div className="error-message">{image1PromptError}</div>}
                         </div>
-                        
                         <div className="input-wrapper">
                             <label htmlFor="text1" className="input-label">
                                 <Type size={18} />
@@ -86,7 +110,6 @@ function Input() {
                         </div>
                     </div>
                 </div>
-                
                 <div className="input-section">
                     <h2 className="section-title">חלק 2</h2>
                     <div className="input-group">
@@ -96,8 +119,8 @@ function Input() {
                                 <span>תיאור תמונה 2</span>
                             </label>
                             <textarea id="image2Prompt" ref={image2PromptRef} className="input-field textarea" placeholder="תאר את התמונה שתרצה ליצור..." />
+                            {image2PromptError && <div className="error-message">{image2PromptError}</div>}
                         </div>
-                        
                         <div className="input-wrapper">
                             <label htmlFor="text2" className="input-label">
                                 <Type size={18} />
@@ -117,13 +140,10 @@ function Input() {
             <button className="generate-button" onClick={handleClick} disabled={loading} >
                 {loading ? (<><Loader size={18} className="spinner" /><span>מעבד...</span></>) : (<span>צור אינפוגרפיקה</span>)}
             </button>
-            
             {error && (<div className="error-message"><p>{error}</p></div>)}
-            
             <div className="preview-section">
                 <h2 className="preview-title">תצוגה מקדימה</h2>
                 <div className="template-preview" dangerouslySetInnerHTML={{ __html: svgData || updateTemplate() }} />
-                
                 {svgData && (<button className="download-button" onClick={downloadSvg}><Download size={18} /><span>הורד SVG</span></button>)}
             </div>
         </div>

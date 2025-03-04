@@ -9,23 +9,25 @@ import os
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins="http://localhost:3000")
+CORS(app, supports_credentials=True, origins="http://localhost:3000") # Bypass CORS policy
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+# Load English NLP model
 nlp_en = None
-
 def get_nlp_model():
     global nlp_en
     if nlp_en is None:
         nlp_en = spacy.load("en_core_web_sm")
     return nlp_en
 
+# Split the first word from the rest of the text
 def split_first_word(text):
     words = text.split()
     if len(words) > 1:
         return words[0], " ".join(words[1:])
     return words[0], ""
 
+# Create infographic
 @app.route('/infographic', methods=['POST'])
 def create_infographic():
     logging.debug("Received POST request at /infographic")
@@ -52,8 +54,9 @@ def create_infographic():
     keywords_image2 = [token.text for token in doc_image2 if token.is_alpha and not token.is_stop]
     combined_image2_en = f"{image2Prompt_en}, {', '.join(keywords_image2)}"
 
-    sd_url = "http://127.0.0.1:7860/sdapi/v1/txt2img"
+    # Generate images using Stable Diffusion
 
+    sd_url = "http://127.0.0.1:7860/sdapi/v1/txt2img"
     try:
         response = requests.post(sd_url, json={"prompt": combined_image1_en, "steps": 20})
         response.raise_for_status()
@@ -77,6 +80,7 @@ def create_infographic():
         logging.error(f"Error loading template.svg: {e}")
         return jsonify({"error": "Template SVG not found"}), 500
 
+    # Replace placeholders in SVG template with actual data
     updated_svg = template_svg.replace('{{text1_first}}', text1_first)\
                               .replace('{{text1_rest}}', text1_rest)\
                               .replace('{{text2_first}}', text2_first)\
@@ -88,10 +92,12 @@ def create_infographic():
     response.headers['Content-Type'] = 'image/svg+xml'
     return response
 
+# Health check
 @app.route("/")
 def helloWorld():
     return "Running Flask server"
 
+# Run the app
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
     app.run(debug=debug_mode, port=5000)

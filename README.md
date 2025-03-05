@@ -14,32 +14,22 @@ Infographic Generator is a project aimed at creating personalized infographics a
 ## Tech Stack🛠️
 - **Frontend**: React 18
 - **Backend**: Python 3.10.6, Flask
-- **Image Generation:** Stable Diffusion WebUI (AUTOMATIC1111)
+- **Image Generation:** ChatGPT (OPENAI)
 - **NLP:** spaCy
-- **Translation:** googletrans
+- **Translation:** GoogleTranslator
 - **SVG Manipulation:** lxml, svgwrite, cairosvg
 
 ## Installation & Usage🚀
 ### Prerequisites
 - Node.js & npm (for the frontend)
 - Python 3.10 (for the backend)
-- Stable Diffusion WebUI - AUTOMATIC1111 (image generator)
+- OPENAI_API_KEY (image generator & prompt generator)
 ### Recommended Versions
 - Node 20.12.0
 - npm 10.5.0
 - Python 3.10.6
 
-### Running Stable Diffusion
-```sh
-cd stable-diffusion-webui
-venv\Scripts\activate
-pip install -r requirements.txt
-webui-user.bat --api
-```
-- Make sure to include `set COMMANDLINE_ARGS=--api` inside `webui-user.bat` before running it. You can edit it in any known text editor
-
-
-### Running the Backend
+### First time running the backend
 ```sh
 cd backend
 python3.10 -m venv venv
@@ -47,12 +37,23 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
+### Next time
+```sh
+cd backend
+venv\Scripts\activate
+python app.py
+```
 
-### Running the Frontend
+### First time running the frontend
 ```sh
 cd frontend
 npm install
 npm install lucide-react
+npm start
+```
+### Next time
+```sh
+cd frontend
 npm start
 ```
 

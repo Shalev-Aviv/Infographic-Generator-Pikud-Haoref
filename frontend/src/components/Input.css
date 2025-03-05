@@ -1,7 +1,5 @@
 /* Variables */
 :root {
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
   --secondary-color: #f3f4f6;
   --border-color: #e5e7eb;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -11,6 +9,7 @@
 
 /* Main Container */
 .infographic-container {
+  display: flex;
   margin: 2rem auto;
   padding: 2rem;
   border-radius: 12px;
@@ -93,7 +92,7 @@
   background-color: var(--orange);
   box-shadow: 0 2px 4px #22395f52;
   color: white;
-  margin-top: 1rem;
+  margin-top: 2rem;
   align-self: center;
   padding: 3.5px 24px 5.5px;
   border-radius: 100px;
@@ -130,9 +129,7 @@
   color: var(--red);
 }
 
-/* Preview Section */
 .preview-section {
-  margin: 2rem auto;
   padding: 1.5rem;
   border-radius: 12px;
 }
@@ -166,23 +163,5 @@
   }
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* Responsive Design */
-@media (min-width: 768px) {
-  .input-wrapper {
-    flex: 1;
-  }
-}
-
-@media (max-width: 767px) {
-  .infographic-container {
-    padding: 1rem;
-    margin: 1rem;
-  }
-  
-  .input-section {
-    padding: 1rem;
   }
 }

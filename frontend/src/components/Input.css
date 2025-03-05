@@ -12,7 +12,6 @@
   display: flex;
   margin: 2rem auto;
   padding: 2rem;
-  border-radius: 12px;
   direction: rtl;
 }
 
@@ -32,6 +31,8 @@
   line-height: 47px;
   font-weight: 700;
   color: var(--dark-gray);
+  padding-left: 20px;
+  padding-right: 0;
 }
 
 .input-group {
@@ -47,13 +48,6 @@
   width: 100%;
 }
 
-.input-label {
-  color: var(--black);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-}
 
 .input-field {
   padding: 16px 25px 24px 24px;

@@ -77,10 +77,7 @@ function Input() {
                     <h2 className="section-title">יצירת אינפוגרפיקה</h2>
                     <div className="input-group">
                         <div className="input-wrapper">
-                            <label htmlFor="header" className="input-label">
-                                <Type size={18} />
-                                <span>טקסט</span>
-                            </label>
+
                             <textarea id="header" ref={infographicData} className="input-field textarea" placeholder="תאר את האינפוגרפיה שתרצה ליצור" onChange={() => setSvgData(null)} />
                         </div>
                     </div>

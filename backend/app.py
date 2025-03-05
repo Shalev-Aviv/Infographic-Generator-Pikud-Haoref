@@ -33,7 +33,7 @@ def generate_prompts(user_input):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a copy generator for infographic posts for the IDF. I want to create an infographic post for the Israeli military's social media. I have a user input describing the infographic. I need you to extract from there / create a header (3 lines at most) that best describes the infographic's topic. Generate the header (3 lines at most, but keep it is minimal as possible) in Hebrew, for the following user input - ",
+                    "content": "You are a copy generator for infographic posts for the IDF. I want to create an infographic post for the IDF's social media. I have a user input describing the infographic. I need you to extract from there / create a header (6 words max!) that best describes the infographic's topic. Generate the header (6 words max, but keep it as minimal as possible) in Hebrew, for the following user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -44,7 +44,7 @@ def generate_prompts(user_input):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for infographic images that will be a part of an infographic post on the IDF's social media. I have a user input describing the infographic. Please generate a short prompt in English that will later be used to generate an image for the infographic post. Make sure to not include text in the image. Also, please add to the prompt the following things so every image will look the same style - Brown, green, and white color scheme, low-poly 3D style, minimalistic, clean, no background. The user input - ",
+                    "content": "You are a prompt generator for infographic posts for the IDF social media social media. I have a user input describing the infographic. Please generate a short prompt in English that will later be used to generate an image for the infographic post. The user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -61,12 +61,15 @@ def generate_prompts(user_input):
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
 
+        static_prompt = " Do not include text in the image, color scheme is Brown and green and white, 3D style, minimalistic, clean, no background, no text, no nudity"
+        image_prompt_with_keywords = image_prompt_with_keywords + static_prompt
+
         try:
             dalle_response = client.images.generate(
                 model="dall-e-3",
                 prompt=image_prompt_with_keywords,
                 n=1,
-                size="1024x1024",  # גודל תמונה נתמך
+                size="1024x1024",
                 response_format="b64_json",
             )
             image_base64 = dalle_response.data[0].b64_json

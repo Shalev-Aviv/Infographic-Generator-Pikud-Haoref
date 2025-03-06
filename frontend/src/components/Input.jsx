@@ -73,15 +73,21 @@ function Input() {
         setIsLanguagePopupOpen(true);
     };
 
-    const handleLanguageSelection = async (language) => {
-        setSelectedLanguage(language);
+    const [tempSelectedLanguage, setTempSelectedLanguage] = useState('he'); // New state
+
+    const handleLanguageSelection = (language) => {
+        setTempSelectedLanguage(language); // Just store the selection
+    };
+
+    const confirmLanguageSelection = async () => { // New function
+        setSelectedLanguage(tempSelectedLanguage); // Update the actual language
         setIsLanguagePopupOpen(false);
         setLoading(true);
         try {
             const response = await fetch('http://127.0.0.1:5000/change_language', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language }),
+                body: JSON.stringify({ language: tempSelectedLanguage }),
             });
             if (!response.ok) {
                 throw new Error(`Server responded with status: ${response.status}`);
@@ -118,15 +124,22 @@ function Input() {
                 {svgData && (<button className="download-button" onClick={downloadSvg}><Download size={18} /><span>הורד SVG</span></button>)}
             </div>
             {isLanguagePopupOpen && (
+            <div className="background-dim">
                 <div className="language-popup">
-                    <select value={selectedLanguage} onChange={(e) => handleLanguageSelection(e.target.value)}>
-                        <option value="he">Hebrew</option>
-                        <option value="en">English</option>
-                        <option value="ar">Arabic</option>
-                        <option value="ru">Russian</option>
+                    <h2 className="popup-title">בחירת שפה</h2>
+                    <select value={tempSelectedLanguage} className="language-select" onChange={(e) => handleLanguageSelection(e.target.value)}>
+                        <option value="he">עברית</option>
+                        <option value="ar">ערבית</option>
+                        <option value="en">אנגלית</option>
+                        <option value="ru">רוסית</option>
                     </select>
+                    <div className="button-container">
+                        <button className="cancel-button" onClick={() => setIsLanguagePopupOpen(false)}>ביטול</button>
+                        <button className="confirm-button" onClick={confirmLanguageSelection}>אישור</button> {/* Call the new function */}
+                    </div>
                 </div>
-            )}
+            </div>
+        )}
         </div>
     );
 }

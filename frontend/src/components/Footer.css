@@ -35,7 +35,7 @@ ul {
     gap: 96px;
     padding: 20px;
     height: auto;
-    z-index: 9999;
+    z-index: 10;
     flex-wrap: wrap;
     margin-top: auto; /* This pushes the footer to the bottom */
     width: 100%; /* Ensure full width */

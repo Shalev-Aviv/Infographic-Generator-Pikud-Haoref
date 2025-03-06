@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = Flask(__name__)
-#Corrected CORS declaration.
 CORS(app, resources={r"/infographic": {"origins": "http://localhost:3000"}, r"/change_language": {"origins": "http://localhost:3000"}}, supports_credentials=True, allow_headers=['Content-Type'])
 app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -43,6 +42,12 @@ def translate_text(text, target_lang):
 
 def create_infographics_for_all(template_file, image_base64, header, sub_header1=None, sub_header2=None, result_prefix="result"):
     languages = {"he": "Hebrew", "en": "English", "ar": "Arabic", "ru": "Russian"}
+    footer_texts = {
+        "he": "מערך ההסברה של פיקוד העורף",
+        "en": "The IDF's Information and Relief Formation",
+        "ar": "قسم التوعية في الجبهة الداخلية",
+        "ru": "Информационное подразделение Командования тыла",
+    }
     results = {}
     for code, lang in languages.items():
         translated_header = header if code == "he" else translate_text(header, lang)
@@ -57,6 +62,13 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
         if image_base64:
             svg_content = svg_content.replace("{{image}}", f"data:image/png;base64,{image_base64}")
         result_file = f"{result_prefix}_{code}.svg"
+        # Determine text direction and anchor
+        direction = "rtl" if code in ["he", "ar"] else "ltr"
+        text_anchor = "start" if code in ["he", "ar"] else "end"
+
+        svg_content = svg_content.replace("{{direction}}", direction)
+        svg_content = svg_content.replace("{{text_anchor}}", text_anchor)
+        svg_content = svg_content.replace("{{footer_text}}", footer_texts[code])
         with open(result_file, "w", encoding="utf-8") as file:
             file.write(svg_content)
         results[code] = svg_content
@@ -98,7 +110,7 @@ def generate_prompts1(user_input: str) -> tuple:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for infographic posts for the IDF social media social media. I have a user input describing the infographic. Please generate a short prompt in English that will later be used to generate an image for the infographic post. Make sure to NOT include the image style in your prompt because I'll later add that. The user input - ",
+                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS. The user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -307,62 +319,26 @@ def infographic():
         logging.error(f"Error in /infographic endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/change_language', methods=['POST'])
 def change_language():
     try:
         language = request.get_json()['language']
-
         # Determine which template was last used by checking for the files.
         template = None
         if os.path.exists("result1_he.svg"):
             template = '1'
-            file_name = "result1_he.svg"
+            prefix = "result1"
         elif os.path.exists("result2_he.svg"):
             template = '2'
-            file_name = "result2_he.svg"
+            prefix = "result2"
         else:
             logging.error("No result svg files found")
             return jsonify({'error': 'No result svg files found'}), 500
-
-        if language == "he":
-            with open(file_name, 'r', encoding="utf-8") as f:
-                svg_content = f.read()
-            return jsonify({'updated_svg': svg_content})
-
+        #Load the correct svg based on the language.
+        file_name = f"{prefix}_{language}.svg"
         with open(file_name, 'r', encoding="utf-8") as f:
             svg_content = f.read()
-
-        root = ET.fromstring(svg_content)
-
-        if template == '1':
-            header_element = root.find(".//{http://www.w3.org/2000/svg}tspan")
-            if header_element is not None:
-                header_text = header_element.text
-                translated_header = translate_text(header_text, language.capitalize())
-                header_element.text = translated_header
-        elif template == '2':
-            header_element = root.find(".//{http://www.w3.org/2000/svg}tspan")
-            if header_element is not None:
-                header_text = header_element.text
-                translated_header = translate_text(header_text, language.capitalize())
-                header_element.text = translated_header
-
-            sub_header1_element = root.find(".//{http://www.w3.org/2000/svg}tspan[@id='sub_header1']")
-            if sub_header1_element is not None:
-                sub_header1_text = sub_header1_element.text
-                translated_sub_header1 = translate_text(sub_header1_text, language.capitalize())
-                sub_header1_element.text = translated_sub_header1
-
-            sub_header2_element = root.find(".//{http://www.w3.org/2000/svg}tspan[@id='sub_header2']")
-            if sub_header2_element is not None:
-                sub_header2_text = sub_header2_element.text
-                translated_sub_header2 = translate_text(sub_header2_text, language.capitalize())
-                sub_header2_element.text = translated_sub_header2
-
-        updated_svg = ET.tostring(root, encoding="unicode")
-        return jsonify({'updated_svg': updated_svg})
-
+        return jsonify({'updated_svg': svg_content})
     except Exception as e:
         logging.error(f"Error in /change_language endpoint: {e}")
         return jsonify({'error': str(e)}), 500

@@ -21,6 +21,11 @@ Stunning infographics in under 30s
 - **Translation:** GoogleTranslator
 - **SVG Manipulation:** lxml, svgwrite, cairosvg
 
+## Time⌛
+- Generates the final SVG in under 30s
+## Cost💸
+- Costs $0.02-$0.10 (depends on the chosen template and input length)
+
 ## Installation & Usage🚀
 ### Prerequisites
 - Node.js & npm (for the frontend)

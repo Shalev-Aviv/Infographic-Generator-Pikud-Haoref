@@ -8,6 +8,9 @@ function Input() {
     const [error, setError] = useState(null);
     const [svgData, setSvgData] = useState(null);
     const previewRef = useRef(null);
+    const [isLanguagePopupOpen, setIsLanguagePopupOpen] = useState(false);
+    const [selectedLanguage, setSelectedLanguage] = useState('he');
+    const [svgLoaded, setSvgLoaded] = useState(false);
 
     const handleClick = async () => {
         console.log("handleClick called");
@@ -31,6 +34,7 @@ function Input() {
             const data = await response.json();
             console.log("Data received:", data);
             setSvgData(data.updated_svg);
+            setSvgLoaded(true);
         } catch (error) {
             console.error('Error:', error);
             setError(`Error: ${error.message}`);
@@ -51,15 +55,10 @@ function Input() {
 
     useEffect(() => {
         if (svgData && previewRef.current) {
-            // ניתוח ה-SVG כאלמנט DOM
             const parser = new DOMParser();
             const doc = parser.parseFromString(svgData, 'image/svg+xml');
             const svgElement = doc.documentElement;
-
-            // ניקוי התוכן הקיים
             previewRef.current.innerHTML = '';
-
-            // הוספת אלמנט ה-SVG לאלמנט התצוגה המקדימה
             previewRef.current.appendChild(svgElement);
         }
     }, [svgData]);
@@ -70,6 +69,33 @@ function Input() {
         }
     }, [svgData]);
 
+    const changeLanguage = () => {
+        setIsLanguagePopupOpen(true);
+    };
+
+    const handleLanguageSelection = async (language) => {
+        setSelectedLanguage(language);
+        setIsLanguagePopupOpen(false);
+        setLoading(true);
+        try {
+            const response = await fetch('http://127.0.0.1:5000/change_language', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ language }),
+            });
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            const data = await response.json();
+            setSvgData(data.updated_svg);
+        } catch (error) {
+            console.error('Error:', error);
+            setError(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="infographic-container">
             <div className="infographic-form">
@@ -77,7 +103,6 @@ function Input() {
                     <h2 className="section-title">יצירת אינפוגרפיקה</h2>
                     <div className="input-group">
                         <div className="input-wrapper">
-
                             <textarea id="header" ref={infographicData} className="input-field textarea" placeholder="תאר את האינפוגרפיה שתרצה ליצור" onChange={() => setSvgData(null)} />
                         </div>
                     </div>
@@ -89,9 +114,19 @@ function Input() {
             {error && (<div className="error-message"><p>{error}</p></div>)}
             <div className="preview-section">
                 <h2 className="preview-title">תצוגה מקדימה</h2>
-                <div className="template-preview" ref={previewRef} />
+                <div className="template-preview" ref={previewRef} onClick={svgLoaded ? changeLanguage : null} />
                 {svgData && (<button className="download-button" onClick={downloadSvg}><Download size={18} /><span>הורד SVG</span></button>)}
             </div>
+            {isLanguagePopupOpen && (
+                <div className="language-popup">
+                    <select value={selectedLanguage} onChange={(e) => handleLanguageSelection(e.target.value)}>
+                        <option value="he">Hebrew</option>
+                        <option value="en">English</option>
+                        <option value="ar">Arabic</option>
+                        <option value="ru">Russian</option>
+                    </select>
+                </div>
+            )}
         </div>
     );
 }

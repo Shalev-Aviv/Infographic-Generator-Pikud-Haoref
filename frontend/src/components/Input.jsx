@@ -119,7 +119,7 @@ function Input() {
             </div>
             {error && (<div className="error-message"><p>{error}</p></div>)}
             <div className="preview-section">
-                <h2 className="preview-title">תצוגה מקדימה</h2>
+                <h2 className="preview-title">תוצר סופי</h2>
                 <div className="template-preview" ref={previewRef} onClick={svgLoaded ? changeLanguage : null} />
                 {svgData && (<button className="download-button" onClick={downloadSvg}><Download size={18} /><span>הורד SVG</span></button>)}
             </div>

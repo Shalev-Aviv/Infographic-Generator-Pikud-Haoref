@@ -17,6 +17,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/infographic": {"origins": "http://localhost:3000"}, r"/change_language": {"origins": "http://localhost:3000"}}, supports_credentials=True, allow_headers=['Content-Type'])
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+# Loads or retrieves the English spaCy NLP model.
 nlp_en = None
 def get_nlp_model():
     global nlp_en
@@ -24,6 +25,7 @@ def get_nlp_model():
         nlp_en = spacy.load("en_core_web_sm")
     return nlp_en
 
+# Translates text to a specified target language using OpenAI's GPT-4.
 def translate_text(text, target_lang):
     if target_lang.lower() == "hebrew":
         return text
@@ -40,6 +42,7 @@ def translate_text(text, target_lang):
         logging.error(f"Translation error: {e}")
         return text
 
+# Creates infographics for all specified languages based on a template and input data.
 def create_infographics_for_all(template_file, image_base64, header, sub_header1=None, sub_header2=None, result_prefix="result"):
     languages = {"he": "Hebrew", "en": "English", "ar": "Arabic", "ru": "Russian"}
     footer_texts = {
@@ -74,6 +77,7 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
         results[code] = svg_content
     return results
 
+# Chooses an infographic template based on user input using OpenAI's GPT-4.
 def choose_template(user_input: str) -> int:
     try:
         template_response = client.chat.completions.create(
@@ -92,6 +96,7 @@ def choose_template(user_input: str) -> int:
         logging.error(f"Error choosing template: {e}")
         return 1
 
+# Generates prompts for template 1 infographics using OpenAI's GPT-4.
 def generate_prompts1(user_input: str) -> tuple:
     try:
         print(f"Generating prompts for user input: {user_input}")
@@ -144,6 +149,7 @@ def generate_prompts1(user_input: str) -> tuple:
         logging.error(f"Error generating prompts: {e}")
         return None, None
 
+# Generates prompts for template 2 infographics using OpenAI's GPT-4.
 def generate_prompts2(user_input: str) -> tuple:
     try:
         print(f"Generating prompts for user input: {user_input}")
@@ -212,6 +218,7 @@ def generate_prompts2(user_input: str) -> tuple:
         logging.error(f"Error generating prompts: {e}")
         return None, None, None, None
 
+# Creates an infographic with template2.svg & the given image and headers.
 def create_infographic1(image_base64, header) -> str:
     """Creates an infographic with template2.svg & the given image and headers."""
     try:
@@ -246,6 +253,7 @@ def create_infographic1(image_base64, header) -> str:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
         return None
 
+# Creates an infographic with template2.svg & the given image and headers.
 def create_infographic2(image_base64, header, sub_header1, sub_header2) -> str:
     """Creates an infographic with template2.svg & the given image and headers."""
     try:
@@ -282,6 +290,7 @@ def create_infographic2(image_base64, header, sub_header1, sub_header2) -> str:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
         return None
 
+# Deletes created SVG files after generating a new one.
 def delete_previous_svgs():
     """Deletes all SVG files with result1_ and result2_ prefixes."""
     for filename in glob.glob("result1_*.svg"):
@@ -297,6 +306,7 @@ def delete_previous_svgs():
         except OSError as e:
             logging.error(f"Error deleting {filename}: {e}")
 
+# Endpoint to generate an infographic based on user input and selected template.
 @app.route('/infographic', methods=['POST'])
 def infographic():
     try:
@@ -319,6 +329,7 @@ def infographic():
         logging.error(f"Error in /infographic endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
+# Endpoint to change the language of the displayed infographic.
 @app.route('/change_language', methods=['POST'])
 def change_language():
     try:
@@ -343,7 +354,7 @@ def change_language():
         logging.error(f"Error in /change_language endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
-# route בסיסי לבדיקת תקינות
+# Basic route to check if the Flask server is running.
 @app.route('/')
 def test_route():
     return 'Flask server is running!'

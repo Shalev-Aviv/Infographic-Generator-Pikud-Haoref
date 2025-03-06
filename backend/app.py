@@ -24,6 +24,26 @@ def get_nlp_model():
         nlp_en = spacy.load("en_core_web_sm")
     return nlp_en
 
+
+def choose_template(user_input : str) -> int:
+    """בוחר את התבנית המתאימה לפי הקלט של המשתמש."""
+    try:
+        template_response = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 7 words, and a big image. Template 2 contains a small header (up to 3 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2'. The user input - ",
+                },
+                {"role": "user", "content": user_input},
+            ],
+        )
+        template = template_response.choices[0].message.content.strip()
+        return template
+    except Exception as e:
+        logging.error(f"Error choosing template: {e}")
+        return 1
+
 def generate_prompts1(user_input: str) -> tuple:
     """Generates prompts for text and image based on the user input."""
     try:
@@ -225,25 +245,6 @@ def create_infographic2(image_base64, header, sub_header1, sub_header2) -> str:
     except Exception as e:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
         return None
-
-def choose_template(user_input : str) -> int:
-    """בוחר את התבנית המתאימה לפי הקלט של המשתמש."""
-    try:
-        template_response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 7 words, and a big image. Template 2 contains a small header (up to 3 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2'. The user input - ",
-                },
-                {"role": "user", "content": user_input},
-            ],
-        )
-        template = template_response.choices[0].message.content.strip()
-        return template
-    except Exception as e:
-        logging.error(f"Error choosing template: {e}")
-        return 1
 
 @app.route('/infographic', methods=['POST'])
 def infographic():

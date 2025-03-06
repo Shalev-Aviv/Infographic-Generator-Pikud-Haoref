@@ -66,4 +66,4 @@ npm start
 Contributions are welcome! Feel free to submit issues or pull requests.
 
 ## License📄
-This project is licensed under the GNU License.
+This project is licensed under the MIT License.

@@ -25,6 +25,47 @@ def get_nlp_model():
     return nlp_en
 
 
+
+def translate_text(text, target_lang):
+    if target_lang.lower() == "hebrew":
+        return text
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {"role": "system", "content": f"Translate the following text from Hebrew to {target_lang}:"},
+                {"role": "user", "content": text}
+            ],
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logging.error(f"Translation error: {e}")
+        return text
+
+def create_infographics_for_all(template_file, image_base64, header, sub_header1=None, sub_header2=None, result_prefix="result"):
+    languages = {"he": "Hebrew", "en": "English", "ar": "Arabic", "ru": "Russian"}
+    results = {}
+    for code, lang in languages.items():
+        translated_header = header if code == "he" else translate_text(header, lang)
+        translated_sub_header1 = translate_text(sub_header1, lang) if sub_header1 else ""
+        translated_sub_header2 = translate_text(sub_header2, lang) if sub_header2 else ""
+        with open(template_file, "r", encoding="utf-8") as file:
+            svg_content = file.read()
+        svg_content = svg_content.replace("{{header}}", translated_header)
+        if sub_header1 is not None:
+            svg_content = svg_content.replace("{{sub_header1}}", translated_sub_header1)
+            svg_content = svg_content.replace("{{sub_header2}}", translated_sub_header2)
+        if image_base64:
+            svg_content = svg_content.replace("{{image}}", f"data:image/png;base64,{image_base64}")
+        result_file = f"{result_prefix}_{code}.svg"
+        with open(result_file, "w", encoding="utf-8") as file:
+            file.write(svg_content)
+        results[code] = svg_content
+    return results
+
+
+
+
 def choose_template(user_input : str) -> int:
     """בוחר את התבנית המתאימה לפי הקלט של המשתמש."""
     try:
@@ -251,25 +292,22 @@ def infographic():
     try:
         user_input = request.get_json()['header']
         logging.info(f"User input: {user_input}")
-
         template = choose_template(user_input)
-        if(template == '1'):
+        if template == '1':
             header, image_base64 = generate_prompts1(user_input)
-            logging.info(f"Header: {header}, Image base64: {image_base64[:100]}...")
-            updated_svg = create_infographic1(image_base64, header)
-        elif(template == '2'):
+            svg_results = create_infographics_for_all("template1.svg", image_base64, header, result_prefix="result1")
+        elif template == '2':
             header, sub_header1, sub_header2, image_base64 = generate_prompts2(user_input)
-            logging.info(f"Header: {header}, sub_header1: {sub_header1}, sub_header2: {sub_header2}, Image base64: {image_base64[:100]}...")
-            updated_svg = create_infographic2(image_base64, header, sub_header1, sub_header2)
+            svg_results = create_infographics_for_all("template2.svg", image_base64, header, sub_header1, sub_header2, result_prefix="result2")
         else:
-            logging.error(f"Invalid template number: {template}")
+            logging.error("Invalid template number")
             return jsonify({'error': 'Invalid template number'}), 400
-        
-        logging.info(f"Updated SVG: {updated_svg}")
-        return jsonify({'updated_svg': updated_svg})
+        # Always pass the Hebrew version to the frontend
+        return jsonify({'updated_svg': svg_results.get("he")})
     except Exception as e:
         logging.error(f"Error in /infographic endpoint: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 
 

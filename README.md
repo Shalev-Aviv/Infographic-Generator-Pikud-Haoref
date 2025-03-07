@@ -22,9 +22,9 @@ Stunning infographics in under 30s
 - **SVG Manipulation:** lxml, svgwrite, cairosvg
 
 ## Time⌛
-- Generates the final SVG in under 30s
+- Generates the final SVG in under 1min
 ## Cost💸
-- Costs $0.02-$0.10 (depends on the chosen template and input length)
+- Costs $0.05-$0.08 for a set of 4 infographics (depends on the chosen template and input length)
 
 ## Installation & Usage🚀
 ### Prerequisites

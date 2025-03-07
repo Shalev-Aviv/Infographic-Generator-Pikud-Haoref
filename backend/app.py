@@ -42,7 +42,135 @@ def translate_text(text, target_lang):
         logging.error(f"Translation error: {e}")
         return text
 
-# Creates infographics for all specified languages based on a template and input data.
+def wrap_text(text, max_chars_per_line):
+    """
+    Wraps text at the end of words when length exceeds max_chars_per_line.
+    Returns a list of lines.
+
+    Args:
+        text (str): The text to wrap
+        max_chars_per_line (int): Maximum characters per line
+
+    Returns:
+        list: List of text lines
+    """
+    if not text or len(text) <= max_chars_per_line:
+        return [text]
+
+    words = text.split()
+    lines = []
+    current_line = words[0]
+
+    for word in words[1:]:
+        # Check if adding the next word exceeds the max length
+        if len(current_line) + len(word) + 1 <= max_chars_per_line:
+            current_line += " " + word
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    # Add the last line
+    if current_line:
+        lines.append(current_line)
+
+    return lines
+
+# Function to modify SVG for wrapped text
+def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_pos, font_size=None, font_weight=None, text_anchor=None, direction=None, fill=None):
+    """
+    Updates SVG content with wrapped text based on character limit
+
+    Args:
+        svg_content (str): The SVG content as string
+        element_id (str): ID of the text element
+        text (str): Text to wrap
+        max_chars (int): Maximum characters per line
+        x_pos (str/float): X position
+        y_pos (str/float): Y position
+        font_size (str, optional): Font size with units
+        font_weight (str, optional): Font weight
+        text_anchor (str, optional): Text anchor
+        direction (str, optional): Text direction
+        fill (str, optional): Text color
+
+    Returns:
+        str: Updated SVG content
+    """
+    if not text:
+        return svg_content
+
+    # Create text element attributes
+    attributes = f'id="{element_id}"'
+    if font_size:
+        attributes += f' font-size="{font_size}"'
+    if font_weight:
+        attributes += f' font-weight="{font_weight}"'
+    if text_anchor:
+        attributes += f' text-anchor="{text_anchor}"'
+        logging.debug(f"add_wrapped_text_to_svg: element_id={element_id}, text_anchor set to: {text_anchor}") # ENSURE THIS LINE IS PRESENT
+    if direction:
+        attributes += f' direction="{direction}"'
+    if fill:
+        attributes += f' fill="{fill}"'
+
+    # Wrap the text
+    lines = wrap_text(text, max_chars)
+
+    # Create SVG text element with tspan for each line
+    text_element = f'<text font-family="Assistant, sans-serif" {attributes} x="{x_pos}" y="{y_pos}">\n'
+
+    # Calculate line height based on font size (approximately 1.2x font size)
+    line_height = 1.2
+    if font_size and font_size.endswith('px'):
+        try:
+            font_size_value = float(font_size.replace('px', ''))
+            line_height = font_size_value * 1.2
+        except ValueError:
+            line_height = 1.2  # Default multiplier if parsing fails
+
+    # Add tspan elements for each line
+    for i, line in enumerate(lines):
+        dy = "1em" if i == 0 else f"{line_height}px"
+        text_element += f'    <tspan x="{x_pos}" dy="{dy}">{line}</tspan>\n'
+
+    text_element += '</text>'
+
+    # Find and replace the existing text element with new wrapped text
+    import re
+    pattern = f'<text[^>]*id="{element_id}"[^>]*>.*?</text>'
+    svg_content = re.sub(pattern, text_element, svg_content, flags=re.DOTALL)
+
+    return svg_content
+
+def shorten_text_gpt(text, target_lang, max_words=7):
+    """
+    Asks GPT to shorten the given text in the target language to a maximum number of words.
+
+    Args:
+        text (str): The text to shorten.
+        target_lang (str): The target language.
+        max_words (int): Maximum number of words in the shortened text.
+
+    Returns:
+        str: Shortened text.
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"Shorten the following text in {target_lang} to a maximum of {max_words} words, while keeping the original meaning as close as possible:"
+                },
+                {"role": "user", "content": text},
+            ],
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logging.error(f"Error shortening text with GPT: {e}")
+        return text # Return original text in case of error
+
+
 def create_infographics_for_all(template_file, image_base64, header, sub_header1=None, sub_header2=None, result_prefix="result"):
     languages = {"he": "Hebrew", "en": "English", "ar": "Arabic", "ru": "Russian"}
     footer_texts = {
@@ -51,30 +179,164 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
         "ar": "قسم التوعية في الجبهة الداخلية",
         "ru": "Информационное подразделение Командования тыла",
     }
+
+    # Different character limits for different languages (wrapping limits)
+    header_char_limits = {
+        "he": 25,
+        "en": 25,
+        "ar": 35,
+        "ru": 25
+    }
+
+    subheader_char_limits = {
+        "he": 25,
+        "en": 25,
+        "ar": 25,
+        "ru": 20
+    }
+
+    # Maximum word counts for header and subheaders
+    header_max_words = {
+        "he": 12,
+        "en": 12,
+        "ar": 12,
+        "ru": 10
+    }
+
+    subheader_max_words = {
+        "he": 8,
+        "en": 8,
+        "ar": 8,
+        "ru": 8
+    }
+
     results = {}
     for code, lang in languages.items():
         translated_header = header if code == "he" else translate_text(header, lang)
         translated_sub_header1 = translate_text(sub_header1, lang) if sub_header1 else ""
         translated_sub_header2 = translate_text(sub_header2, lang) if sub_header2 else ""
-        with open(template_file, "r", encoding="utf-8") as file:
-            svg_content = file.read()
-        svg_content = svg_content.replace("{{header}}", translated_header)
-        if sub_header1 is not None:
+
+        header_word_count = len(translated_header.split())
+        subheader1_word_count = len(translated_sub_header1.split())
+        subheader2_word_count = len(translated_sub_header2.split())
+
+        # Shorten header if it exceeds word limit
+        header_max_word_count = header_max_words.get(code, 12)
+        if header_word_count > header_max_word_count:
+            translated_header = shorten_text_gpt(translated_header, lang, header_max_word_count)
+
+        # Shorten sub_header1 if it exceeds word limit
+        subheader1_max_word_count = subheader_max_words.get(code, 9)
+        if subheader1_word_count > subheader1_max_word_count:
+            translated_sub_header1 = shorten_text_gpt(translated_sub_header1, lang, subheader1_max_word_count)
+
+        # Shorten sub_header2 if it exceeds word limit
+        subheader2_max_word_count = subheader_max_words.get(code, 9)
+        if subheader2_word_count > subheader2_word_count: # corrected variable name here. It was subheader2_word_count > subheader1_max_word_count
+            translated_sub_header2 = shorten_text_gpt(translated_sub_header2, lang, subheader2_max_word_count)
+
+        # Determine text direction and template
+        is_rtl = code in ["he", "ar"]
+        direction = "rtl" if is_rtl else "ltr"
+        text_anchor_rtl = "end"  # For RTL languages
+        text_anchor_ltr = "start"    # For LTR languages
+        text_anchor = text_anchor_rtl if is_rtl else text_anchor_ltr
+
+        # Choose correct template based on template type and language direction
+        actual_template_file = template_file
+        if "template2" in template_file and not is_rtl:
+            actual_template_file = "template2_ltr.svg"
+            logging.info(f"Using LTR template for language: {code}")
+
+        try:
+            with open(actual_template_file, "r", encoding="utf-8") as file:
+                svg_content = file.read()
+                logging.info(f"Successfully opened template file: {actual_template_file}")
+        except Exception as e:
+            logging.error(f"Error opening template file {actual_template_file}: {e}")
+            continue
+
+        # Replace basic placeholders
+        # For template 2, direction and text-anchor are hardcoded in the SVG
+        if "template2" not in actual_template_file:
+            svg_content = svg_content.replace("{{direction}}", direction)
+            svg_content = svg_content.replace("{{text_anchor}}", text_anchor)
+        svg_content = svg_content.replace("{{footer_text}}", footer_texts[code])
+
+        # Make sure all placeholders are replaced
+        if "template2" in actual_template_file:
+            # Direct replacement for potential placeholder formats
             svg_content = svg_content.replace("{{sub_header1}}", translated_sub_header1)
             svg_content = svg_content.replace("{{sub_header2}}", translated_sub_header2)
+
         if image_base64:
             svg_content = svg_content.replace("{{image}}", f"data:image/png;base64,{image_base64}")
-        result_file = f"{result_prefix}_{code}.svg"
-        # Determine text direction and anchor
-        direction = "rtl" if code in ["he", "ar"] else "ltr"
-        text_anchor = "start" if code in ["he", "ar"] else "end"
+            # Also try this format of image placeholder
+            svg_content = svg_content.replace("BASE64", f"data:image/png;base64,{image_base64}")
 
-        svg_content = svg_content.replace("{{direction}}", direction)
-        svg_content = svg_content.replace("{{text_anchor}}", text_anchor)
-        svg_content = svg_content.replace("{{footer_text}}", footer_texts[code])
+        # Apply wrapped text for header and subheaders
+        header_limit = header_char_limits.get(code, 25)
+        subheader_limit = subheader_char_limits.get(code, 25)
+
+        # Replace header with wrapped version
+        svg_content = add_wrapped_text_to_svg(
+            svg_content,
+            "text1",
+            translated_header,
+            header_limit,
+            "250.0",
+            "100.0",
+            font_size="32px",
+            font_weight="bold",
+            text_anchor="middle",  # Header is always centered
+            direction=direction,
+            fill="#E89024"
+        )
+
+        if "template2" in actual_template_file:
+            # The x position needs to be adjusted for RTL - try a smaller increment
+            subheader_x_pos = "450.0" if is_rtl else "50.0"  # Trying x_pos = 500.0 for RTL
+            # subheader_x_pos = "800.0" if is_rtl else "50.0" # OLD - too far right
+            # subheader_x_pos = "450.0" if is_rtl else "50.0" # OLD - original value
+
+            if translated_sub_header1:
+                svg_content = add_wrapped_text_to_svg(
+                    svg_content,
+                    "text2",
+                    translated_sub_header1,
+                    subheader_limit,
+                    subheader_x_pos,
+                    "250.0",
+                    font_size="20px",
+                    text_anchor="start", # keep hardcoded value from template2.svg
+                    direction=direction, # keep hardcoded value from template2.svg
+                    fill="#FFFFFF"
+                )
+
+            if translated_sub_header2:
+                svg_content = add_wrapped_text_to_svg(
+                    svg_content,
+                    "text3",
+                    translated_sub_header2,
+                    subheader_limit,
+                    subheader_x_pos,
+                    "300.0",
+                    font_size="20px",
+                    text_anchor="start", # keep hardcoded value from template2.svg
+                    direction=direction, # keep hardcoded value from template2.svg
+                    fill="#FFFFFF"
+                )
+
+        # Log the SVG content for debugging
+        logging.debug(f"SVG content for {code}: {svg_content[:500]}...")
+
+        result_file = f"{result_prefix}_{code}.svg"
         with open(result_file, "w", encoding="utf-8") as file:
             file.write(svg_content)
+            logging.info(f"Successfully wrote SVG to {result_file}")
+
         results[code] = svg_content
+
     return results
 
 # Chooses an infographic template based on user input using OpenAI's GPT-4.
@@ -85,7 +347,7 @@ def choose_template(user_input: str) -> int:
             messages=[
                 {
                     "role": "system",
-                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 7 words, and a big image. Template 2 contains a small header (up to 3 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2'. The user input - ",
+                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 10 words, and a big image. Template 2 contains a small header (up to 7 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2'. The user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -105,7 +367,7 @@ def generate_prompts1(user_input: str) -> tuple:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a copy generator for infographic posts for the IDF. I want to create an infographic post for the IDF's social media. I have a user input describing the infographic. I need you to extract from there / create a header (6 words max!) that best describes the infographic's topic. Generate the header (6 words max, but keep it as minimal as possible) in Hebrew, for the following user input - ",
+                    "content": "You are a copy generator for infographic posts for the IDF. I want to create an infographic post for the IDF's social media. I have a user input describing the infographic. I need you to extract from there / create a header (10 words max!) that best describes the infographic's topic. Generate the header (10 words max) in Hebrew, for the following user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -158,13 +420,13 @@ def generate_prompts2(user_input: str) -> tuple:
             messages=[
                 {
                     "role": "system",
-                    "content": """You are a copy generator for infographic posts for the IDF. 
-                    I want to create an infographic post for the IDF's social media. 
-                    I have a user input describing the infographic. 
+                    "content": """You are a copy generator for infographic posts for the IDF.
+                    I want to create an infographic post for the IDF's social media.
+                    I have a user input describing the infographic.
                     Generate the following in Hebrew:
-                    1. A header (3 words max).
-                    2. A sub-header (3 words max).
-                    3. An optional second sub-header (3 words max). If no second sub-header is needed, leave this line blank.
+                    A header (7 words max).
+                    A sub-header (5 words max).
+                    An optional second sub-header (5 words max). If no second sub-header is needed, leave this line blank.
                     Please return each item on a new line.
                     User input: """,
                 },
@@ -186,7 +448,7 @@ def generate_prompts2(user_input: str) -> tuple:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for infographic posts for the IDF social media social media. I have a user input describing the infographic. Please generate a short prompt in English that will later be used to generate an image for the infographic post. Make sure to NOT include the image style in your prompt because I'll later add that. The user input - ",
+                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS. The user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -198,7 +460,7 @@ def generate_prompts2(user_input: str) -> tuple:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = " Do not include text in the image, 3D style, minimalistic, clean, no background, no text, no nudity"
+        static_prompt = " 2D objects in a 3D environment, minimalistic, clean, no background, no nudity, no text, do not include text in the image"
         image_prompt_with_keywords = image_prompt_with_keywords + static_prompt
         try:
             dalle_response = client.images.generate(
@@ -218,73 +480,116 @@ def generate_prompts2(user_input: str) -> tuple:
         logging.error(f"Error generating prompts: {e}")
         return None, None, None, None
 
-# Creates an infographic with template2.svg & the given image and headers.
+# Update the create_infographic1 and create_infographic2 functions to use our text wrapping
 def create_infographic1(image_base64, header) -> str:
-    """Creates an infographic with template2.svg & the given image and headers."""
+    """Creates an infographic with template1.svg & the given image and headers."""
     try:
         print(f"Creating infographic with header: {header}, template: 1")
-        print(f"Image base64: {image_base64[:100]}...")  # הדפסה חלקית כדי למנוע הצפת קונסולה
+        print(f"Image base64: {image_base64[:100]}...")
         template_file = f"template1.svg"
         with open(template_file, "r", encoding="utf-8") as file:
             svg_content = file.read()
         print(f"SVG content read successfully.")
 
-        # החלפת מחזיקי המקום
-        svg_content = svg_content.replace("{{header}}", header)
-        if image_base64 :
+        # Apply wrapped text for header
+        svg_content = add_wrapped_text_to_svg(
+            svg_content,
+            "text1",
+            header,
+            25,  # Default character limit
+            "250.0",
+            "100.0",
+            font_size="32px",
+            font_weight="bold",
+            text_anchor="middle",
+            direction="rtl",  # Default to Hebrew
+            fill="#E89024"
+        )
+
+        if image_base64:
             svg_content = svg_content.replace("{{image}}", f"data:image/png;base64,{image_base64}")
             svg_content = svg_content.replace("BASE64", f"data:image/png;base64,{image_base64}")
         print(f"Placeholders replaced successfully.")
 
-        root = ET.fromstring(svg_content)
-        print(f"XML root created successfully.")
-
-        updated_svg = ET.tostring(root, encoding="unicode")
-        print(f"Updated SVG created successfully.")
-
         result_file = f"result1.svg"
         with open(result_file, "w", encoding="utf-8") as file:
-            file.write(updated_svg)
+            file.write(svg_content)
         print(f"SVG written to file successfully.")
 
-        return updated_svg
+        return svg_content
 
     except Exception as e:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
         return None
 
-# Creates an infographic with template2.svg & the given image and headers.
 def create_infographic2(image_base64, header, sub_header1, sub_header2) -> str:
     """Creates an infographic with template2.svg & the given image and headers."""
     try:
-        print(f"Creating infographic with header: {header}, template: 2")  # Corrected template number
+        print(f"Creating infographic with header: {header}, template: 2")
         print(f"Image base64: {image_base64[:100]}...")
-        template_file = f"template2.svg"  # Corrected template file
+        
+        # For Hebrew (default)
+        template_file = "template2.svg"
+        direction = "rtl"
+        text_anchor = "start"
+        
         with open(template_file, "r", encoding="utf-8") as file:
             svg_content = file.read()
         print(f"SVG content read successfully.")
 
-        # החלפת מחזיקי המקום
-        svg_content = svg_content.replace("{{header}}", header)
-        svg_content = svg_content.replace("{{sub_header1}}", sub_header1)
-        svg_content = svg_content.replace("{{sub_header2}}", sub_header2)
+        # Apply wrapped text for headers
+        svg_content = add_wrapped_text_to_svg(
+            svg_content,
+            "text1",
+            header,
+            25,  # Default character limit
+            "250.0",
+            "100.0",
+            font_size="32px",
+            font_weight="bold",
+            text_anchor="middle",
+            direction=direction,
+            fill="#E89024"
+        )
+
+        if sub_header1:
+            svg_content = add_wrapped_text_to_svg(
+                svg_content,
+                "text2",
+                sub_header1,
+                25,  # Shorter character limit for subheaders
+                "450.0",
+                "250.0",
+                font_size="20px",
+                text_anchor=text_anchor,
+                direction=direction,
+                fill="#FFFFFF"
+            )
+
+        if sub_header2:
+            svg_content = add_wrapped_text_to_svg(
+                svg_content,
+                "text3",
+                sub_header2,
+                25,  # Shorter character limit for subheaders
+                "450.0",
+                "300.0",
+                font_size="20px",
+                text_anchor=text_anchor,
+                direction=direction,
+                fill="#FFFFFF"
+            )
 
         if image_base64:
             svg_content = svg_content.replace("{{image}}", f"data:image/png;base64,{image_base64}")
         print(f"Placeholders replaced successfully.")
 
-        root = ET.fromstring(svg_content)
-        print(f"XML root created successfully.")
-
-        updated_svg = ET.tostring(root, encoding="unicode")
-        print(f"Updated SVG created successfully.")
-
         result_file = f"result2.svg"
         with open(result_file, "w", encoding="utf-8") as file:
-            file.write(updated_svg)
+            file.write(svg_content)
         print(f"SVG written to file successfully.")
 
-        return updated_svg
+        return svg_content
 
     except Exception as e:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
@@ -306,11 +611,10 @@ def delete_previous_svgs():
         except OSError as e:
             logging.error(f"Error deleting {filename}: {e}")
 
-# Endpoint to generate an infographic based on user input and selected template.
 @app.route('/infographic', methods=['POST'])
 def infographic():
     try:
-        delete_previous_svgs() # Delete previous SVGs before generating new ones.
+        delete_previous_svgs()  # Delete previous SVGs before generating new ones.
         user_input = request.get_json()['header']
         logging.info(f"User input: {user_input}")
         template = choose_template(user_input)
@@ -345,7 +649,7 @@ def change_language():
         else:
             logging.error("No result svg files found")
             return jsonify({'error': 'No result svg files found'}), 500
-        #Load the correct svg based on the language.
+        # Load the correct svg based on the language.
         file_name = f"{prefix}_{language}.svg"
         with open(file_name, 'r', encoding="utf-8") as f:
             svg_content = f.read()

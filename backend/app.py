@@ -377,7 +377,7 @@ def generate_prompts1(user_input: str) -> tuple:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS. The user input - ",
+                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. The user input - ",
                 },
                 {"role": "user", "content": user_input},
             ],

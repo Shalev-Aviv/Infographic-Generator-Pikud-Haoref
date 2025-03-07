@@ -1,6 +1,6 @@
 import './Input.css';
 import React, { useRef, useState, useEffect } from 'react';
-import { Type, Download, Loader } from 'lucide-react';
+import { Download, Loader } from 'lucide-react';
 
 function Input() {
     const infographicData = useRef(null);
@@ -47,7 +47,7 @@ function Input() {
         if (!svgData) return;
         const element = document.createElement("a");
         element.href = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
-        element.download = "infographic.svg";
+        element.download = `infographic_${selectedLanguage}.svg`; // Use selectedLanguage here
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
@@ -76,11 +76,11 @@ function Input() {
     const [tempSelectedLanguage, setTempSelectedLanguage] = useState('he'); // New state
 
     const handleLanguageSelection = (language) => {
-        setTempSelectedLanguage(language); // Just store the selection
+        setTempSelectedLanguage(language);
     };
 
-    const confirmLanguageSelection = async () => { // New function
-        setSelectedLanguage(tempSelectedLanguage); // Update the actual language
+    const confirmLanguageSelection = async () => {
+        setSelectedLanguage(tempSelectedLanguage);
         setIsLanguagePopupOpen(false);
         setLoading(true);
         try {

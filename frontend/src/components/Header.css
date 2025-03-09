@@ -1,0 +1,29 @@
+.background {
+    background-image: url('/public/media/welcome_orange.jpg');
+    left: 0;
+    top: 0;
+    z-index: 0;
+    width: 100% !important;
+    max-height: 441px;
+    min-height: 441px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.header {
+    text-align: right;
+    position: relative;
+    padding: 167px 0 0;
+    align-items: flex-start;
+    max-width: 1312px;
+    margin: 0 auto;
+    min-width: 1025px;
+}
+
+.title {
+    color: var(--dark-gray);
+}
+
+.sub-title {
+    color: var(--black);
+}

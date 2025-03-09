@@ -1,0 +1,230 @@
+.infographic-container {
+  display: flex;
+  margin: 2rem auto;
+  padding: 2rem;
+  direction: rtl;
+}
+
+.infographic-form {
+  display: flex;
+  gap: 2rem;
+}
+
+.input-section {
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.section-title {
+  font-size: 32px;
+  line-height: 47px;
+  font-weight: 700;
+  color: var(--dark-gray);
+  padding-left: 20px;
+  padding-right: 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+
+.input-field {
+  padding: 16px 25px 24px 24px;
+  width: 267px;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #FFFFFF;
+  border: .5px solid #E2E2E2;
+  box-shadow: 0 0 4px #0000000a;
+}
+
+.textarea {
+  font-family: 'Heebo', sans-serif;
+  min-height: 100px;
+  resize: none;
+}
+
+.generate-button, .download-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+.generate-button {
+  font-family: 'Heebo', sans-serif;
+  background-color: var(--orange);
+  box-shadow: 0 2px 4px #22395f52;
+  color: white;
+  margin-top: 2rem;
+  align-self: center;
+  padding: 3.5px 24px 5.5px;
+  border-radius: 100px;
+}
+.generate-button:hover:not(:disabled) {
+  background-color: orange;
+}
+.generate-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.generate-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.download-button {
+  background-color: #f3f4f6;
+  color: var(--black);
+  margin-top: 1rem;
+}
+
+.download-button:hover {
+  background-color: #e5e7eb;
+}
+
+.error-message {
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--red);
+}
+
+.preview-section {
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.preview-title {
+  font-size: 32px;
+  line-height: 47px;
+  font-weight: 700;
+  color: var(--dark-gray);
+  margin-bottom: 1rem;
+}
+
+.template-preview {
+  font-family: 'Rubik', sans-serif;
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.language-popup select {
+  color: var(--white);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  background-color: #598399;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.background-dim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.language-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 4px;
+  background-color: #376984;
+  z-index: 999;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 300px;
+}
+
+.popup-title {
+  justify-content: left;
+  text-align: right;
+  margin: 0;
+  padding: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Heebo', sans-serif;
+}
+
+.language-select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  font-size: 1em;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.confirm-button,
+.cancel-button {
+  font-family: 'Heebo', sans-serif;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  line-height: 1.75;
+  color: white;
+}
+.confirm-button {
+  background-color: var(--orange);
+}
+.cancel-button {
+  background-color: #598399;
+}
+.confirm-button:hover,
+.cancel-button:hover {
+  opacity: 0.8;
+}

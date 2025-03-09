@@ -1,0 +1,25 @@
+font:
+    Heebo
+    h1 title - weight 900, size 64px, letter-spacing -1.5px, line-height 80, text-shadow 0 0 1px rrgba(0, 0, 0, 0.48)
+    h2 title - weight 700, size 32px, line-height 1
+    p - weight 400, size 16px, line-height 24
+
+colors:
+    --red: #ed0000;
+    --dark-red: #bd0728;
+    --orange: #e89024;
+    --light-orange: #f3ad54;
+    --black: #222221;
+    --blue: #1d55d0;
+    --dark-blue: #22395f;
+    --dark-gray: #2f4858;
+    --light-blue: #f4f8fe;
+    --silver: #f2f2f2;
+    --twitter: #222221;
+    --facebook: #3d5a96;
+    --whatsapp: #2ab858;
+    --link: #1d55d0;
+    --email: #222221;
+    --gray: #24263d;
+    --yellow: #eec02d;
+    --green: #00a64c;

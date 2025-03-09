@@ -117,7 +117,7 @@ def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_p
     lines = wrap_text(text, max_chars)
 
     # Create SVG text element with tspan for each line
-    text_element = f'<text font-family="Assistant, sans-serif" {attributes} x="{x_pos}" y="{y_pos}">\n'
+    text_element = f'<text font-family="Rubik, sans-serif" {attributes} x="{x_pos}" y="{y_pos}">\n'
 
     # Calculate line height based on font size (approximately 1.2x font size)
     line_height = 1.2
@@ -197,17 +197,17 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
 
     # Maximum word counts for header and subheaders
     header_max_words = {
-        "he": 12,
-        "en": 12,
-        "ar": 12,
-        "ru": 10
+        "he": 10,
+        "en": 10,
+        "ar": 10,
+        "ru": 8
     }
 
     subheader_max_words = {
-        "he": 8,
-        "en": 8,
-        "ar": 8,
-        "ru": 8
+        "he": 6,
+        "en": 6,
+        "ar": 6,
+        "ru": 6
     }
 
     results = {}
@@ -340,16 +340,16 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
     return results
 
 # Chooses an infographic template based on user input using OpenAI's GPT-4.
-def choose_template(user_input: str) -> int:
+def choose_template(user_input_english: str) -> int:
     try:
         template_response = client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=[
                 {
                     "role": "system",
-                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 10 words, and a big image. Template 2 contains a small header (up to 7 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2'. The user input - ",
+                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 10 words, and a big image. Template 2 contains a small header (up to 7 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2' based on the template you think will best fit to represent that infographic. The user input - ",
                 },
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": user_input_english},
             ],
         )
         template = template_response.choices[0].message.content.strip()
@@ -359,27 +359,37 @@ def choose_template(user_input: str) -> int:
         return 1
 
 # Generates prompts for template 1 infographics using OpenAI's GPT-4.
-def generate_prompts1(user_input: str) -> tuple:
+def generate_prompts1(user_input_english: str) -> tuple:
     try:
-        print(f"Generating prompts for user input: {user_input}")
+        print(f"Generating prompts for user input: {user_input_english}")
         header_response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a copy generator for infographic posts for the IDF. I want to create an infographic post for the IDF's social media. I have a user input describing the infographic. I need you to extract from there / create a header (10 words max!) that best describes the infographic's topic. Generate the header (10 words max) in Hebrew, for the following user input - ",
+                    "content": "I'll give you a prompt, and you need to response with an header that should fit the prompt's topic, the header will be displayed on the IDF's social media. "
+                    "For example, if the prompt is 'Earthquake', you should generate something like 'How to deal with an earthquake' or 'Earthquake safety tips'. "
+                    "Another example is 'Explain about the two steps to defend yourselves from a rocket attack', you should generate something like 'How to defend yourselves from a rocket attack' or 'Instructions during an alarm' or 'Being in public is life-threatening'. "
+                    "Another example is 'public transformation' for this you will respond something like 'Instructions for those using public transportation' or 'Public transportation safety'. "
+                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire safety tips' or 'Fire prevention'. "
+                    "Make sure to not add any details or make up stuff, respond with just a short friendly header in Hebrew (up to 10 words). My prompt is: ",
                 },
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": user_input_english},
             ],
         )
         image_response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. The user input - ",
+                    "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing my prompt. Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. "
+                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on the ground in a park "
+                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space (Mamad)', or 'A man lying on the ground in a park "
+                    "Another example is 'public transformation' for this you will respond something like 'train on rails in a park' "
+                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a room' "
+                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English. like 'A man lying on the ground in a park'. My prompt is: ",
                 },
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": user_input_english},
             ],
         )
         header = header_response.choices[0].message.content.strip()
@@ -391,8 +401,8 @@ def generate_prompts1(user_input: str) -> tuple:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = " Do not include text in the image, 3D style, minimalistic, clean, no background, no text, no nudity"
-        image_prompt_with_keywords = image_prompt_with_keywords + static_prompt
+        static_prompt = "Isometric vector illustration in a clean, modern style with bright, flat colors and minimal shading. "
+        image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
         try:
             dalle_response = client.images.generate(
                 model="dall-e-3",
@@ -412,11 +422,11 @@ def generate_prompts1(user_input: str) -> tuple:
         return None, None
 
 # Generates prompts for template 2 infographics using OpenAI's GPT-4.
-def generate_prompts2(user_input: str) -> tuple:
+def generate_prompts2(user_input_english: str) -> tuple:
     try:
-        print(f"Generating prompts for user input: {user_input}")
+        print(f"Generating prompts for user input: {user_input_english}")
         headers_response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
@@ -425,12 +435,12 @@ def generate_prompts2(user_input: str) -> tuple:
                     I have a user input describing the infographic.
                     Generate the following in Hebrew:
                     A header (7 words max).
-                    A sub-header (5 words max).
-                    An optional second sub-header (5 words max). If no second sub-header is needed, leave this line blank.
+                    A sub-header (6 words max).
+                    An optional second sub-header (6 words max). If no second sub-header is needed, leave this line blank.
                     Please return each item on a new line.
                     User input: """,
                 },
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": user_input_english},
             ],
         )
         headers = headers_response.choices[0].message.content.strip().split('\n')
@@ -444,13 +454,18 @@ def generate_prompts2(user_input: str) -> tuple:
             print(f"Sub-header 2 generated: {sub_header2}")
 
         image_response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a prompt generator for images. I have a user input describing a topic. Please generate a short prompt in English that will later be used to generate a stunning image. Add as much detail as possible, but make sure to not violate OPENAI's TOS. The user input - ",
+                    "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing the situation.  Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. "
+                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on the ground in a park "
+                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space (Mamad)', or 'A man lying on the ground in a park "
+                    "Another example is 'public transformation' for this you will respond something like 'train on rails in a park' "
+                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a room' "
+                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English. like 'A man lying on the ground in a park'. My prompt is: ",
                 },
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": user_input_english},
             ],
         )
         image_prompt = image_response.choices[0].message.content.strip()
@@ -616,13 +631,18 @@ def infographic():
     try:
         delete_previous_svgs()  # Delete previous SVGs before generating new ones.
         user_input = request.get_json()['header']
-        logging.info(f"User input: {user_input}")
-        template = choose_template(user_input)
+        logging.info(f"User input (Hebrew): {user_input}")
+
+        # Translate user input to English
+        user_input_english = translate_text(user_input, "English")
+        logging.info(f"User input (English): {user_input_english}")
+
+        template = choose_template(user_input_english)
         if template == '1':
-            header, image_base64 = generate_prompts1(user_input)
+            header, image_base64 = generate_prompts1(user_input_english)
             svg_results = create_infographics_for_all("template1.svg", image_base64, header, result_prefix="result1")
         elif template == '2':
-            header, sub_header1, sub_header2, image_base64 = generate_prompts2(user_input)
+            header, sub_header1, sub_header2, image_base64 = generate_prompts2(user_input_english)
             svg_results = create_infographics_for_all("template2.svg", image_base64, header, sub_header1, sub_header2, result_prefix="result2")
         else:
             logging.error("Invalid template number")

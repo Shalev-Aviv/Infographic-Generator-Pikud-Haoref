@@ -120,6 +120,7 @@
 }
 
 .template-preview {
+  font-family: 'Rubik', sans-serif;
   border-radius: 12px;
   padding: 1rem;
   min-height: 300px;

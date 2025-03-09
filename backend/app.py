@@ -184,7 +184,7 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
     header_char_limits = {
         "he": 25,
         "en": 25,
-        "ar": 35,
+        "ar": 30,
         "ru": 25
     }
 
@@ -204,10 +204,10 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
     }
 
     subheader_max_words = {
-        "he": 6,
-        "en": 6,
-        "ar": 6,
-        "ru": 6
+        "he": 10,
+        "en": 10,
+        "ar": 10,
+        "ru": 10
     }
 
     results = {}
@@ -401,7 +401,7 @@ def generate_prompts1(user_input_english: str) -> tuple:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = "Isometric vector illustration in a clean, modern style with bright, flat colors and minimal shading. "
+        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, "
         image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
         try:
             dalle_response = client.images.generate(
@@ -475,8 +475,9 @@ def generate_prompts2(user_input_english: str) -> tuple:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = " 2D objects in a 3D environment, minimalistic, clean, no background, no nudity, no text, do not include text in the image"
-        image_prompt_with_keywords = image_prompt_with_keywords + static_prompt
+        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, "
+        image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
+
         try:
             dalle_response = client.images.generate(
                 model="dall-e-3",

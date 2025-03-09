@@ -22,6 +22,7 @@
   color: var(--dark-gray);
   padding-left: 20px;
   padding-right: 0;
+  margin-bottom: 1rem;
 }
 
 .input-group {
@@ -120,6 +121,7 @@
 }
 
 .template-preview {
+  background-color: var(--orange);
   font-family: 'Rubik', sans-serif;
   border-radius: 12px;
   padding: 1rem;

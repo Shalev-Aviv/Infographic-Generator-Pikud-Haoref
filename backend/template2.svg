@@ -22,7 +22,7 @@
 		<tspan x="250.0" dy="1em">{{header}}</tspan>
 	</text>
   
-	<image height="168px" id="image1" width="168px" x="41.0" xlink:href="{{image}}" y="211.0" clip-path="url(#circleClip2)" />
+	<image height="168px" id="image1" width="168px" x="41.0" clip-path="url(#circleClip2)" xlink:href="{{image}}" y="211.0" />
 
 	<text font-family="Rubik" font-size="20px" id="text2" text-anchor="start"  direction="rtl" x="450.0" y="250.0" fill="#FFFFFF">
 		<tspan x="450.0" dy="1em">

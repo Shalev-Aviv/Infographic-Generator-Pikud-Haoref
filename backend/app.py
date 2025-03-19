@@ -42,6 +42,7 @@ def translate_text(text, target_lang):
         logging.error(f"Translation error: {e}")
         return text
 
+# Function to wrap text at the end of words when length exceeds max_chars_per_line
 def wrap_text(text, max_chars_per_line):
     """
     Wraps text at the end of words when length exceeds max_chars_per_line.
@@ -142,6 +143,7 @@ def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_p
 
     return svg_content
 
+# Function to shorten text using GPT-4
 def shorten_text_gpt(text, target_lang, max_words=7):
     """
     Asks GPT to shorten the given text in the target language to a maximum number of words.
@@ -170,7 +172,7 @@ def shorten_text_gpt(text, target_lang, max_words=7):
         logging.error(f"Error shortening text with GPT: {e}")
         return text # Return original text in case of error
 
-
+# Function to create infographics for all languages
 def create_infographics_for_all(template_file, image_base64, header, sub_header1=None, sub_header2=None, result_prefix="result"):
     languages = {"he": "Hebrew", "en": "English", "ar": "Arabic", "ru": "Russian"}
     footer_texts = {
@@ -336,7 +338,6 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
             logging.info(f"Successfully wrote SVG to {result_file}")
 
         results[code] = svg_content
-
     return results
 
 # Chooses an infographic template based on user input using OpenAI's GPT-4.
@@ -358,18 +359,17 @@ def choose_template(user_input_english: str) -> int:
         logging.error(f"Error choosing template: {e}")
         return 1
 
-# Generates prompts for template 1 infographics using OpenAI's GPT-4.
-def generate_prompts1(user_input_english: str) -> tuple:
+# Generates a header for the infographic using OpenAI's GPT-4.
+def generate_header(user_input_english: str) -> str:
     try:
-        print(f"Generating prompts for user input: {user_input_english}")
         header_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": "I'll give you a prompt, and you need to response with an header that should fit the prompt's topic, the header will be displayed on the IDF's social media. "
+                    "content": "I'll give you a prompt, and you need to response with an header that represents the prompt's topic, the header will be displayed on the IDF's social media channels, and will be showed to people all over the country, the header should give information about the topic. "
                     "For example, if the prompt is 'Earthquake', you should generate something like 'How to deal with an earthquake' or 'Earthquake safety tips'. "
-                    "Another example is 'Explain about the two steps to defend yourselves from a rocket attack', you should generate something like 'How to defend yourselves from a rocket attack' or 'Instructions during an alarm' or 'Being in public is life-threatening'. "
+                    "Another example for a prompt like this 'Explain about the two steps to defend yourselves from a rocket attack' the header will look something similar to 'How to defend yourselves from a rocket attack' or 'Instructions during an alarm' or 'Being in public when an alarm sounds is life-threatening'."
                     "Another example is 'public transformation' for this you will respond something like 'Instructions for those using public transportation' or 'Public transportation safety'. "
                     "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire safety tips' or 'Fire prevention'. "
                     "Make sure to not add any details or make up stuff, respond with just a short friendly header in Hebrew (up to 10 words). My prompt is: ",
@@ -377,23 +377,33 @@ def generate_prompts1(user_input_english: str) -> tuple:
                 {"role": "user", "content": user_input_english},
             ],
         )
+        header = header_response.choices[0].message.content.strip()
+        print(f"Header generated: {header}")
+        return header
+    except Exception as e:
+        logging.error(f"Error generating header: {e}")
+        return None
+
+# Generates prompts for template 1 infographics using OpenAI's GPT-4.
+def generate_prompts1(user_input_english: str) -> tuple:
+    try:
+        print(f"Generating image prompts for user input: {user_input_english}")
+        header = generate_header(user_input_english)
         image_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
                     "role": "system",
                     "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing my prompt. Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. "
-                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on the ground in a park "
-                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space (Mamad)', or 'A man lying on the ground in a park "
+                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on his stomach in the park' "
+                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space' (Mamad), or 'A man lying on his stomach in the park' "
                     "Another example is 'public transformation' for this you will respond something like 'train on rails in a park' "
-                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a room' "
-                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English. like 'A man lying on the ground in a park'. My prompt is: ",
+                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a white room without any furnitures' "
+                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English, Like 'A man lying on his stomach in the park'. My prompt is: ",
                 },
                 {"role": "user", "content": user_input_english},
             ],
         )
-        header = header_response.choices[0].message.content.strip()
-        print(f"Header generated: {header}")
         image_prompt = image_response.choices[0].message.content.strip()
         print(f"Image prompt generated: {image_prompt}")
         nlp = get_nlp_model()
@@ -424,31 +434,25 @@ def generate_prompts1(user_input_english: str) -> tuple:
 # Generates prompts for template 2 infographics using OpenAI's GPT-4.
 def generate_prompts2(user_input_english: str) -> tuple:
     try:
-        print(f"Generating prompts for user input: {user_input_english}")
+        print(f"Generating image prompts for user input: {user_input_english}")
+        header = generate_header(user_input_english)
         headers_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": """You are a copy generator for infographic posts for the IDF.
-                    I want to create an infographic post for the IDF's social media.
-                    I have a user input describing the infographic.
-                    Generate the following in Hebrew:
-                    A header (7 words max).
-                    A sub-header (6 words max).
-                    An optional second sub-header (6 words max). If no second sub-header is needed, leave this line blank.
-                    Please return each item on a new line.
-                    User input: """,
+                    "content": """You are a copy generator for infographic posts for the IDF's social media channels.
+                        I have a user input describing the topic of the post, and I want you to generate two sub-headers that will give crusial & practical information for the Israelis on the given topic (maximum 8 words per sub-header).
+                        Generate it in Hebrew, and return each sub header in a new line.
+                        Post's topic: """,
                 },
-                {"role": "user", "content": user_input_english},
+                {"role": "user", "content": header},
             ],
         )
         headers = headers_response.choices[0].message.content.strip().split('\n')
-        header = headers[0]
-        sub_header1 = headers[1]
-        sub_header2 = headers[2] if len(headers) > 2 else None
+        sub_header1 = headers[0]
+        sub_header2 = headers[1] if len(headers) > 1 else None
 
-        print(f"Header generated: {header}")
         print(f"Sub-header 1 generated: {sub_header1}")
         if sub_header2:
             print(f"Sub-header 2 generated: {sub_header2}")
@@ -538,6 +542,7 @@ def create_infographic1(image_base64, header) -> str:
         logging.error(f"שגיאה ביצירת אינפוגרפיקה: {e}")
         return None
 
+# Update the create_infographic1 and create_infographic2 functions to use our text wrapping
 def create_infographic2(image_base64, header, sub_header1, sub_header2) -> str:
     """Creates an infographic with template2.svg & the given image and headers."""
     try:
@@ -627,6 +632,7 @@ def delete_previous_svgs():
         except OSError as e:
             logging.error(f"Error deleting {filename}: {e}")
 
+# Endpoint to generate an infographic based on user input.
 @app.route('/infographic', methods=['POST'])
 def infographic():
     try:

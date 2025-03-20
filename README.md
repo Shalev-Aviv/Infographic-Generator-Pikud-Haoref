@@ -66,11 +66,13 @@ cd frontend
 npm install
 npm install lucide-react
 npm start
+```
 
 ### Next time
 ```sh
 cd frontend
 npm start
+```
 
 ## Contribution🤝
 Contributions are welcome! Feel free to submit issues or pull requests.

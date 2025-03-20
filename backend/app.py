@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import spacy
 import xml.etree.ElementTree as ET
 import glob
+import re
 
 load_dotenv()
 
@@ -43,60 +44,28 @@ def translate_text(text, target_lang):
         return text
 
 # Function to wrap text at the end of words when length exceeds max_chars_per_line
-def wrap_text(text, max_chars_per_line):
-    """
-    Wraps text at the end of words when length exceeds max_chars_per_line.
-    Returns a list of lines.
-
-    Args:
-        text (str): The text to wrap
-        max_chars_per_line (int): Maximum characters per line
-
-    Returns:
-        list: List of text lines
-    """
-    if not text or len(text) <= max_chars_per_line:
+def wrap_text(text, max_chars_per_line, max_lines=None):
+    if not text:
         return [text]
-
     words = text.split()
     lines = []
     current_line = words[0]
-
     for word in words[1:]:
-        # Check if adding the next word exceeds the max length
-        if len(current_line) + len(word) + 1 <= max_chars_per_line:
+        if len(current_line) + 1 + len(word) <= max_chars_per_line:
             current_line += " " + word
         else:
             lines.append(current_line)
             current_line = word
-
-    # Add the last line
-    if current_line:
-        lines.append(current_line)
-
+    lines.append(current_line)
+    if max_lines and len(lines) > max_lines:
+        extra = " ".join(lines[max_lines-1:])
+        # Ensure the final line doesn't exceed max_chars_per_line
+        extra = extra[:max_chars_per_line].rstrip()
+        lines = lines[:max_lines-1] + [extra]
     return lines
 
 # Function to modify SVG for wrapped text
 def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_pos, font_size=None, font_weight=None, text_anchor=None, direction=None, fill=None):
-    """
-    Updates SVG content with wrapped text based on character limit
-
-    Args:
-        svg_content (str): The SVG content as string
-        element_id (str): ID of the text element
-        text (str): Text to wrap
-        max_chars (int): Maximum characters per line
-        x_pos (str/float): X position
-        y_pos (str/float): Y position
-        font_size (str, optional): Font size with units
-        font_weight (str, optional): Font weight
-        text_anchor (str, optional): Text anchor
-        direction (str, optional): Text direction
-        fill (str, optional): Text color
-
-    Returns:
-        str: Updated SVG content
-    """
     if not text:
         return svg_content
 
@@ -115,7 +84,7 @@ def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_p
         attributes += f' fill="{fill}"'
 
     # Wrap the text
-    lines = wrap_text(text, max_chars)
+    lines = wrap_text(text, max_chars, max_lines=2)
 
     # Create SVG text element with tspan for each line
     text_element = f'<text font-family="Rubik, sans-serif" {attributes} x="{x_pos}" y="{y_pos}">\n'
@@ -145,17 +114,6 @@ def add_wrapped_text_to_svg(svg_content, element_id, text, max_chars, x_pos, y_p
 
 # Function to shorten text using GPT-4
 def shorten_text_gpt(text, target_lang, max_words=7):
-    """
-    Asks GPT to shorten the given text in the target language to a maximum number of words.
-
-    Args:
-        text (str): The text to shorten.
-        target_lang (str): The target language.
-        max_words (int): Maximum number of words in the shortened text.
-
-    Returns:
-        str: Shortened text.
-    """
     try:
         response = client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -193,7 +151,7 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
     subheader_char_limits = {
         "he": 25,
         "en": 25,
-        "ar": 25,
+        "ar": 27,
         "ru": 20
     }
 
@@ -209,7 +167,7 @@ def create_infographics_for_all(template_file, image_base64, header, sub_header1
         "he": 10,
         "en": 10,
         "ar": 10,
-        "ru": 10
+        "ru": 6
     }
 
     results = {}
@@ -348,7 +306,7 @@ def choose_template(user_input_english: str) -> int:
             messages=[
                 {
                     "role": "system",
-                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 10 words, and a big image. Template 2 contains a small header (up to 7 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2' based on the template you think will best fit to represent that infographic. The user input - ",
+                    "content": "Your role is to recieve a prompt from the user that describe an infographic, and you need to choose a template that will display the infographic on the IDF's social media, you can only choose either '1' or '2' (indicates the template you think will best fit to visualize the user input). Template 1 contains a header with up to 10 words, and a big image. Template 2 contains a small header (up to 10 words), an image, and 1-2 sub-headers. You will now recieve the user input and can only choose '1' or '2' based on the template you think will best fit to represent that infographic. The user input - ",
                 },
                 {"role": "user", "content": user_input_english},
             ],
@@ -384,22 +342,16 @@ def generate_header(user_input_english: str) -> str:
         logging.error(f"Error generating header: {e}")
         return None
 
-# Generates prompts for template 1 infographics using OpenAI's GPT-4.
-def generate_prompts1(user_input_english: str) -> tuple:
+# Generates image using OpenAI's DALL-E 3 model.
+def generate_image(user_input_english: str) -> str:
+    """Generates an image prompt and base64 encoded image."""
     try:
-        print(f"Generating image prompts for user input: {user_input_english}")
-        header = generate_header(user_input_english)
         image_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing my prompt. Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. "
-                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on his stomach in the park' "
-                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space' (Mamad), or 'A man lying on his stomach in the park' "
-                    "Another example is 'public transformation' for this you will respond something like 'train on rails in a park' "
-                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a white room without any furnitures' "
-                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English, Like 'A man lying on his stomach in the park'. My prompt is: ",
+                    "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing my prompt. Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on his stomach in the park' Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space' (Mamad), or 'A man lying on his stomach in the park' Another example is 'public transformation' for this you will respond something like 'train on rails in a park' Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a white room without any furnitures' Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English, Like 'A man lying on his stomach in the park', I remind you to not include religious or political symbols. My prompt is: ",
                 },
                 {"role": "user", "content": user_input_english},
             ],
@@ -411,28 +363,36 @@ def generate_prompts1(user_input_english: str) -> tuple:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, "
+        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, no religious or political symbols, no arabian features, "
         image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
-        try:
-            dalle_response = client.images.generate(
-                model="dall-e-3",
-                prompt=image_prompt_with_keywords,
-                n=1,
-                size="1024x1024",
-                response_format="b64_json",
-            )
-            image_base64 = dalle_response.data[0].b64_json
-            print(f"Image base64 generated: {image_base64[:100]}...")
-            return header, image_base64
-        except Exception as dalle_error:
-            logging.error(f"DALL-E 3 error: {dalle_error}")
-            return header, None
+
+        dalle_response = client.images.generate(
+            model="dall-e-3",
+            prompt=image_prompt_with_keywords,
+            n=1,
+            size="1024x1024",
+            response_format="b64_json",
+        )
+        image_base64 = dalle_response.data[0].b64_json
+        print(f"Image base64 generated: {image_base64[:100]}...")
+        return image_base64
+    except Exception as dalle_error:
+        logging.error(f"DALL-E 3 error: {dalle_error}")
+        return None
+
+# Generates prompts for template 1 infographics using OpenAI's GPT-4.
+def generate_prompts1(user_input_english: str) -> tuple:
+    try:
+        print(f"Generating prompts for template 1 with user input: {user_input_english}")
+        header = generate_header(user_input_english)
+        image_base64 = generate_image(user_input_english)
+        return header, image_base64
     except Exception as e:
-        logging.error(f"Error generating prompts: {e}")
+        logging.error(f"Error generating prompts for template 1: {e}")
         return None, None
 
 # Generates prompts for template 2 infographics using OpenAI's GPT-4.
-def generate_prompts2(user_input_english: str) -> tuple:
+def generate_prompts2(user_input_english: str, subheader_max_chars: int = 40) -> tuple:
     try:
         print(f"Generating image prompts for user input: {user_input_english}")
         header = generate_header(user_input_english)
@@ -442,14 +402,17 @@ def generate_prompts2(user_input_english: str) -> tuple:
                 {
                     "role": "system",
                     "content": """You are a copy generator for infographic posts for the IDF's social media channels.
-                        I have a user input describing the topic of the post, and I want you to generate two sub-headers that will give crusial & practical information for the Israelis on the given topic (maximum 8 words per sub-header).
-                        Generate it in Hebrew, and return each sub header in a new line.
-                        Post's topic: """,
+                                         I have a user input describing the topic of the post, and I want you to generate two sub-headers that will give crusial & practical information for the Israelis on the given topic (maximum 6 words per sub-header).
+                                         Generate it in Hebrew, and return each sub header in a new line.
+                                         Post's topic: """,
                 },
                 {"role": "user", "content": header},
             ],
         )
-        headers = headers_response.choices[0].message.content.strip().split('\n')
+        raw_subheaders_response = headers_response.choices[0].message.content.strip()
+        print(f"Raw sub-headers response from GPT-4o-mini: '{raw_subheaders_response}'") # Added logging
+        headers = raw_subheaders_response.split('\n')
+        print(f"Split sub-headers: {headers}") # Added logging
         sub_header1 = headers[0]
         sub_header2 = headers[1] if len(headers) > 1 else None
 
@@ -457,47 +420,18 @@ def generate_prompts2(user_input_english: str) -> tuple:
         if sub_header2:
             print(f"Sub-header 2 generated: {sub_header2}")
 
-        image_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "We'll now play a game where I give you a prompt, and you need to return a prompt describing the situation.  Make sure to not violate OPENAI's TOS, and do not mention peoples religion & race. "
-                    "For example, if my prompt is 'Earthquake', you should generate the following prompt 'A man lying on the ground in a park "
-                    "Another example is if you get something like 'Explain about the two steps to defend yourselves from a rocket attack', you should generate the following prompt 'A man inside a secure-residential-space (Mamad)', or 'A man lying on the ground in a park "
-                    "Another example is 'public transformation' for this you will respond something like 'train on rails in a park' "
-                    "Another example is 'How do you deal with a fire in the house?' for this you will respond something like 'Fire in a room' "
-                    "Make sure to not add any details or make up stuff, respond with just a short friendly prompt in English. like 'A man lying on the ground in a park'. My prompt is: ",
-                },
-                {"role": "user", "content": user_input_english},
-            ],
-        )
-        image_prompt = image_response.choices[0].message.content.strip()
-        print(f"Image prompt generated: {image_prompt}")
-        nlp = get_nlp_model()
-        doc = nlp(image_prompt)
-        keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
-        image_prompt_with_keywords = f"{image_prompt}, {keywords}"
-        print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, "
-        image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
+        # Enforce maximum character limit for sub-headers
+        if sub_header1 and len(sub_header1) > subheader_max_chars:
+            sub_header1 = sub_header1[:subheader_max_chars].rsplit(' ', 1)[0]
+            print(f"Sub-header 1 truncated to: {sub_header1}")
+        if sub_header2 and len(sub_header2) > subheader_max_chars:
+            sub_header2 = sub_header2[:subheader_max_chars].rsplit(' ', 1)[0]
+            print(f"Sub-header 2 truncated to: {sub_header2}")
 
-        try:
-            dalle_response = client.images.generate(
-                model="dall-e-3",
-                prompt=image_prompt_with_keywords,
-                n=1,
-                size="1024x1024",
-                response_format="b64_json",
-            )
-            image_base64 = dalle_response.data[0].b64_json
-            print(f"Image base64 generated: {image_base64[:100]}...")
-            return header, sub_header1, sub_header2, image_base64
-        except Exception as dalle_error:
-            logging.error(f"DALL-E 3 error: {dalle_error}")
-            return header, sub_header1, sub_header2, None
+        image_base64 = generate_image(user_input_english)
+        return header, sub_header1, sub_header2, image_base64
     except Exception as e:
-        logging.error(f"Error generating prompts: {e}")
+        logging.error(f"Error generating prompts for template 2: {e}")
         return None, None, None, None
 
 # Update the create_infographic1 and create_infographic2 functions to use our text wrapping
@@ -645,6 +579,8 @@ def infographic():
         logging.info(f"User input (English): {user_input_english}")
 
         template = choose_template(user_input_english)
+        logging.info(f"Raw template response: '{template}'") # ADD THIS LINE
+        logging.info(f"Template chosen: {template}, Type: {type(template)}")
         if template == '1':
             header, image_base64 = generate_prompts1(user_input_english)
             svg_results = create_infographics_for_all("template1.svg", image_base64, header, result_prefix="result1")

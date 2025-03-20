@@ -1,4 +1,78 @@
-# Infographic Generator Project - Version 1.1.1🚀
+# Infographic Generator🎨
+
+## Overview
+Infographic Generator is a project aimed at creating personalized infographics automatically. The project features a user-friendly interface where users can input Hebrew text, and receive personalized infographics in various languages. The system uses NLP for keyword extraction, automatic translation, ChatGPT for text generation, and DALL-E3 for image generation.<br>
+Stunning infographics in under 30s
+
+## Features✨
+- **React-based UI:** An intuitive front-end interface for template selection and text input.
+- **Personalized Infographic Creation:** Generating infographics with text and images based on user selection.
+- **Multilingual Support:** Support for creating infographics in Hebrew, English, Arabic, and Russian.
+- **OPENAI Integration:** Automatic image generation using DALL-E3 based on the input text.
+- **NLP Utilization:** Keyword extraction from the text using spaCy to enhance the DALL-E3 prompt.
+- **Template Usage:** Utilizing SVG-based templates to create the infographic structure.
+
+## Tech Stack🛠️
+- **Frontend**: React 18
+- **Backend**: Python 3.10.6, Flask
+- **Prompt Generation:** ChatGPT-4 Turbo (OPENAI)
+- **Image Generation:** DALL-E3 (OPENAI)
+- **NLP:** spaCy
+- **Translation:** GoogleTranslator
+- **SVG Manipulation:** lxml, svgwrite, cairosvg
+
+## Time⌛
+- Generates the final SVG in under 1min
+## Cost💸
+- Costs $0.05-$0.08 for a set of 4 infographics (depends on the chosen template and input length)
+
+## Installation & Usage🚀
+### Prerequisites
+- Node.js & npm (for the frontend)
+- Python 3.10 (for the backend)
+- OPENAI_API_KEY (image generator & prompt generator)
+### Recommended Versions
+- Node 20.12.0
+- npm 10.5.0
+- Python 3.10.6
+
+### First time running the backend
+before running the backend make sure you have the following:
+- OPENAI api key with money connected to your account
+- created `.env` file inside the backend folder with the following:
+`OPENAI_API_KEY=YOUR_API_KEY`
+`SERVER_PORT=YOUR_BACKEND_PORT`
+`CLIENT_PORT=YOUR_FRONTEND_PORT`
+```sh
+cd backend
+python3.10 -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
+### Next time
+```sh
+cd backend
+venv\Scripts\activate
+python app.py
+```
+
+### First time running the frontend
+before running the backend make sure you have the following:
+- created `.env` file inside the frontend folder with the following:
+`REACT_APP_SERVER_PORT=YOUR_BACKEND_PORT`
+```sh
+cd frontend
+npm install
+npm install lucide-react
+npm start
+
+### Next time
+```sh
+cd frontend
+npm start
+
+```# Infographic Generator Project - Version 1.1.1🚀
 
 ## Description:
 Version 1.1.2 of the Infographic Generator is now live!🥳 Building upon the improvements of version 1.1.1, this update focuses on refining the infographic generation process through minor prompt engineering enhancements and fixes for SVG text rendering. These changes contribute to more accurate and visually appealing multilingual infographics. Continue to leverage this powerful Flask and Python backend service for all your infographic needs! 🎨🖼️
@@ -36,3 +110,15 @@ Two robust API endpoints at your service:
 
 ## Version 1.1.2 - Refined Generation and Enhanced Text!🏆💯
 **Infographic Generator v1.1.2 builds upon the streamlined download feature of v1.1.1 by incorporating crucial refinements to the infographic generation process. Minor prompt engineering changes lead to better content generation, while fixes for SVG text rendering ensure a more polished final product. We are committed to continuous improvement and look forward to bringing you even more exciting updates!**🎉🥳
+
+### Next time
+```sh
+cd frontend
+npm start
+```
+
+## Contribution🤝
+Contributions are welcome! Feel free to submit issues or pull requests.
+
+## License📄
+This project is licensed under the MIT License.

@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Download, Loader } from 'lucide-react';
 
 function Input() {
+    const serverUrl = `http://127.0.0.1:${process.env.REACT_APP_SERVER_PORT || 5000}`;
     const infographicData = useRef(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -19,7 +20,7 @@ function Input() {
         setLoading(true);
         try {
             console.log("Sending request with data:", infographicData.current.value);
-            const response = await fetch('http://127.0.0.1:5000/infographic', {
+            const response = await fetch(`${serverUrl}/infographic`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -84,7 +85,7 @@ function Input() {
         setIsLanguagePopupOpen(false);
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:5000/change_language', {
+            const response = await fetch(`${serverUrl}/change_language`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ language: tempSelectedLanguage }),

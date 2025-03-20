@@ -13,10 +13,13 @@ load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client_host = f"http://localhost:{os.getenv('CLIENT_PORT', '3000')}"
 
 app = Flask(__name__)
-CORS(app, resources={r"/infographic": {"origins": "http://localhost:3000"}, r"/change_language": {"origins": "http://localhost:3000"}}, supports_credentials=True, allow_headers=['Content-Type'])
-app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app, resources={
+    r"/infographic": {"origins": client_host}, 
+    r"/change_language": {"origins": client_host}
+}, supports_credentials=True, allow_headers=['Content-Type'])
 
 # Loads or retrieves the English spaCy NLP model.
 nlp_en = None
@@ -628,4 +631,5 @@ def test_route():
 
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
-    app.run(debug=debug_mode, port=5000)
+    port = int(os.getenv('SERVER_PORT', 5000))
+    app.run(debug=debug_mode, port=port)

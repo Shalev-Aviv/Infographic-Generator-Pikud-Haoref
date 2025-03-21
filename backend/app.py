@@ -366,7 +366,7 @@ def generate_image(user_input_english: str) -> str:
         keywords = ", ".join([token.text for token in doc if not token.is_stop and token.is_alpha])
         image_prompt_with_keywords = f"{image_prompt}, {keywords}"
         print(f"Image prompt with keywords: {image_prompt_with_keywords}")
-        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no text, no religious or political symbols, no arabian features, "
+        static_prompt = "Isometric vector illustration in a clean and minimalist, modern style with bright, flat, solid colors and minimal shading, simplified geometric shapes, no background, no arabian features, "
         image_prompt_with_keywords = static_prompt + image_prompt_with_keywords
 
         dalle_response = client.images.generate(
